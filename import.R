@@ -18,6 +18,7 @@ library(tidyverse)
 # 1. detect format
 
 # There is only 2 formats: ods or csv
+directories  <-list.dirs("./inputs/",recursive = FALSE,full.names = FALSE)
 
 ods_tables <- list.files("./inputs/2017",pattern=".ods",all.files = TRUE)
 csv_tables <-list.files("./inputs/2017",pattern=".csv",all.files= TRUE)
@@ -358,14 +359,6 @@ for (csv_file in csv_tables) {
 
 
 
-
-
-
-
-TC1<-read.csv("inputs/2017/TC1_VF.csv",sep=";",row.names=NULL)
-skip_term_csv(TC1)
-TC1= TC1[-1:-7,]
-colnames(TC1)
 #-------------------------------------------------------------------------------------------------------------------------
 # Types:
 # ON va parcourir uniquement les elements qui ont une lenght ==1
