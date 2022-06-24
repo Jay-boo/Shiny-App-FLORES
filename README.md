@@ -83,3 +83,7 @@ Ainsi une solution pourrait etre de simplement tenir un report d'importation
 Remarque : Ici ce n'est pas grave de le stocker en local , il n'a pas vocation à etre modifié lors de la mise ne ligne de l'appli.
 Structure du report: 
 directory(year) |scale | filename
+
+### EPCI problem
+
+https://www.insee.fr/fr/information/2510634

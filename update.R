@@ -59,6 +59,8 @@ for (dir in common_directories) {
     missing_imports[["files"]] <- c(missing_files,missing_imports[["files"]])
 
 }
+
+
 #--------------------------
 # Throw useless variables
 rm(list=ls()[ls() != "missing_imports"])

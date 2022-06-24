@@ -1,5 +1,5 @@
 rm(list=ls())
 
 source("update.R")
-#Only create missinf_imports list 
-
+#Only create missing_imports list 
+print(missing_imports)
