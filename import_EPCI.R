@@ -81,28 +81,47 @@ for (col in cols){
 cols[del_index] <-rep(NULL,length(del_index))
 tables[del_index] <-rep(NULL,length(del_index))
 
-
 #--------------------------------------
-# Step 3 : Detect Interest variables and rename them
+# Step 3 : Detect Interest variables and rename them  + remove useless vars
+
+
+
+cols<-append(cols,list(
+    "test"=c("EPCI",)
+))
+sapply(tables,FUN=function(i){return(colnames(i))})
 
 counter=1
 for (col in cols) {
-    index_nb_etab <- wich( str_detect(col,"nb_etab"))
-    index_eff31 <- wich( str_detect(col,"EFF31"))
-    index_effEQTP <- wich( str_detect(col,"effEQTP"))
-    index_rembrut <- wich(str_detect(col,"Rembrut"))
-    index_non_annexe <- wich( str_detect(col,"NON_Annexe"))
+    index_nb_etab <- which(
+         str_detect(col,"Etab|etb|étab|ETAB")
+    )
+    index_eff31 <- which(
+         str_detect(col,"eff|EFF|Eff") & str_detect(col,"31")
+    )
+
+    index_effEQTP <- which(
+        str_detect(col,"eff|EFF|Eff") & !str_detect(col,"31") & str_detect(col,"EQTP|Eqtp|eqtp")
+    )
+
+    index_rembrut <- which(
+        str_detect(col,"REMBRUT|rembrut|REMBrut|RemBrut|remBrut")
+    )
+    index_non_annexe <- which(
+        str_detect(col,"NON_ANNEXE|non_annexe|Non_Annexe|Non_annexe|non_annex|Non_annex")
+    )
+
     indexes <- c(index_nb_etab,
-                    index_eff_31,
+                    index_eff31,
                     index_effEQTP,
                     index_rembrut,
                     index_non_annexe
     )
     indexes_list=list(
-        "nb_etab"=index_nb_etab
-        "eff_31"=index_eff31
-        "eff_EQTP"=index_effEQTP
-        "rem_brut"=index_rembrut
+        "nb_etab"=index_nb_etab,
+        "eff_31"=index_eff31,
+        "eff_EQTP"=index_effEQTP,
+        "rem_brut"=index_rembrut,
         "non_annexe"=index_non_annexe
     )
 
@@ -121,14 +140,116 @@ for (col in cols) {
         }
     }
     
-    col=col[-del_ind]
+    if(!is.null(del_ind)){
+        col=col[-del_ind]
+        #Needed to delete the column in the table too
+        table=tables[[counter]]
+        table <-table[,-del_ind]
+        tables[[counter]] = table
+
+    }
     cols[[counter]] = col
+    
     counter=counter+1
 }
 
 
+
 #----------------------------------------
-# Step 4 : Detect jurid variables
+# Step 4 : Detect jurid variables +rename jurid1 et jurid2
+
+jurid_vars<-list()
+jurid_vars_names<-sapply(cols,FUN=function(i){
+    return(i[str_detect(i,"jur|Jur|JUR")])
+}) %>% unique
+
+while(length(jurid_vars) < length(jurid_vars_names)){
+    jurid_vars <-append(jurid_vars,list(c()))
+}
+names(jurid_vars)=jurid_vars_names
+
+rename<-c()
+counter=1
+while(length(rename) < length(jurid_vars)){
+    rename <- c(rename,paste("jurid",counter,sep=""))
+    counter= counter+1
+}
+
+del_index <- c()
+counter=1
+for (col in cols){
+    ind_jurid_var <- which(str_detect(col,"jurid"))
+    
+    if (ind_jurid_var %>% length ==1){
+        lab <-col[ind_jurid_var]
+        col[ind_jurid_var] <-rename[which(names(jurid_vars)==lab)]
+        cols[[counter]]<-col
+        jurid_vars[[lab]] <- c(jurid_vars[[lab]],names(cols)[counter])
+    }else{
+        #On enleve la table
+        del_index <-c(del_index,counter)
+    }
+    counter=counter+1
+}
+cols[del_index] <- rep(NULL,length(del_index))
+tables[del_index] <- rep(NULL,length(del_index))
+names(jurid_vars) <- rename
+
+#------------------------------------------------------
+# Step 5 : Detect typo vars +  Rename typo1 and typo2
+
+jurid_vars_names<-sapply(cols,FUN=function(i){
+    return(i[str_detect(i,"jur|Jur|JUR")])
+}) %>% unique
+
+
+
+
+
+
+
+
+
+#---------------------------------------------------------
+# Step 6 : Detect EPCI info missing and fix it + Merge the good tables
+
+# Regarder juste sur il existe un trio de variable LIBGEO, DEP, nom
+# Si non on enleve toute les variables en trop comme on a rename toutes les autres variables importantes 
+# il sera facile de les identifiées
+ 
+
+# Rmrq : Pas prevu d'avoir des variables d'interets differentes
+# entre les tables d'une meme directory
+
+vars_interet_length <-sum(cols[[1]] %in% c("nb_etab","eff_31","eff_EQTP","rem_brut","non_annexe"))
+
+sizes_list <-list()
+while( length(sizes_list)< length(jurid_vars_names)){
+    sizes_list<-append(sizes_list,list(c()))
+}
+names(sizes_list) <- names(jurid_vars)
+
+for ( i in 1: length(jurid_vars)){
+    lab_paire <-names(jurid_vars)[i]
+    sizes<-c()
+    lab_tabs <- jurid_vars[[i]]
+    for (tab in lab_tabs){
+        col <- cols[[tab]]
+        size <- length(col) -2 - vars_interet_length
+        sizes <- c(sizes,size)
+    }
+    sizes_list[[lab_paire]] <- sizes
+
+}
+sizes_list
+
+
+col=cols[[1]]
+
+#-----------------------------------------------------------
+# Step 6 : write CSV 
+
+
 
 
 
@@ -191,19 +312,7 @@ write.csv(tmp_table,paste("./outputs/",filename,sep=""))
 
 
 #---------------------------------------------------------------------
-detect_var(data){
-    vars=colnames(data)
-    ind_EPCI_pot<- which(
-        str_detect(vars,"EPCI|epci")
-    )
-    ind_jurid_2 <- which(
-        str_detect(vars,"jurid2|juridr")
-    )
-    ind_jurid_1<- which(
-        str_detect(vars,"jurid")
-    )
 
-}
 
 pattern=c("juridr","jurid2",colnames(tmp_table))
 str_detect(pattern,"jurid$")#ne detect que juri
