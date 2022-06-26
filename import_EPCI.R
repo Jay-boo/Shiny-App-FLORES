@@ -9,7 +9,7 @@ library(readODS)
 # Let work only on one dir for the moment
 
 directories <- list.dirs("./inputs/", recursive = FALSE, full.names = FALSE)
-dir <- directories[1]
+dir <- directories[2]
 
 
 
@@ -142,7 +142,7 @@ for (col in cols) {
     
     if(!is.null(del_ind)){
         col=col[-del_ind]
-        #Needed to delete the column in the table too
+        # Needed to delete the column in the table too
         table=tables[[counter]]
         table <-table[,-del_ind]
         tables[[counter]] = table
@@ -168,10 +168,10 @@ while(length(jurid_vars) < length(jurid_vars_names)){
 }
 names(jurid_vars)=jurid_vars_names
 
-rename<-c()
+rename_jurid<-c()
 counter=1
-while(length(rename) < length(jurid_vars)){
-    rename <- c(rename,paste("jurid",counter,sep=""))
+while(length(rename_jurid) < length(jurid_vars)){
+    rename_jurid <- c(rename_jurid,paste("jurid",counter,sep=""))
     counter= counter+1
 }
 
@@ -182,7 +182,7 @@ for (col in cols){
     
     if (ind_jurid_var %>% length ==1){
         lab <-col[ind_jurid_var]
-        col[ind_jurid_var] <-rename[which(names(jurid_vars)==lab)]
+        col[ind_jurid_var] <-rename_jurid[which(names(jurid_vars)==lab)]
         cols[[counter]]<-col
         jurid_vars[[lab]] <- c(jurid_vars[[lab]],names(cols)[counter])
     }else{
@@ -193,22 +193,50 @@ for (col in cols){
 }
 cols[del_index] <- rep(NULL,length(del_index))
 tables[del_index] <- rep(NULL,length(del_index))
-names(jurid_vars) <- rename
+names(jurid_vars) <- rename_jurid
 
 #------------------------------------------------------
 # Step 5 : Detect typo vars +  Rename typo1 and typo2
 
-jurid_vars_names<-sapply(cols,FUN=function(i){
-    return(i[str_detect(i,"jur|Jur|JUR")])
-}) %>% unique
+cols
+jurid_vars
+
+typo_vars_names<-sapply(cols,FUN=function(i){
+    detect <-which(str_detect(i,"typ|Typ|TYP"))
+    if(detect %>% length ==1){
+        return(i[detect])
+    }
+})
+
+vars_names<-c()
+for (el in typo_vars_names){
+    if( !is.null(el)){vars_names<- c(vars_names,el)}
+} 
+typo_vars_names<-vars_names %>% unique
 
 
+length(typo_vars_names)
+rename_typo <-c()
+counter=1
+while(length(rename_typo) < length(typo_vars_names)){
+    rename_typo <- c(rename_typo,paste("typo",counter, sep=""))
+    counter= counter+1
+}
+rename_typo
 
+#Rename cols
+counter=1
+for (col in cols){
+    ind_typo <- str_detect(col,"typ|Typ|TYP")
+    if(ind_typo %>% length ==1){
+        lab <-col[ind_typo]
+        col[ind_typo] <- rename_typo[which(typo_vars_names == lab)]
+        cols[[counter]] =col
 
-
-
-
-
+    }
+    counter= counter + 1
+}
+cols
 
 #---------------------------------------------------------
 # Step 6 : Detect EPCI info missing and fix it + Merge the good tables
@@ -216,104 +244,68 @@ jurid_vars_names<-sapply(cols,FUN=function(i){
 # Regarder juste sur il existe un trio de variable LIBGEO, DEP, nom
 # Si non on enleve toute les variables en trop comme on a rename toutes les autres variables importantes 
 # il sera facile de les identifiées
- 
-
-# Rmrq : Pas prevu d'avoir des variables d'interets differentes
-# entre les tables d'une meme directory
-
-vars_interet_length <-sum(cols[[1]] %in% c("nb_etab","eff_31","eff_EQTP","rem_brut","non_annexe"))
-
-sizes_list <-list()
-while( length(sizes_list)< length(jurid_vars_names)){
-    sizes_list<-append(sizes_list,list(c()))
-}
-names(sizes_list) <- names(jurid_vars)
-
-for ( i in 1: length(jurid_vars)){
-    lab_paire <-names(jurid_vars)[i]
-    sizes<-c()
-    lab_tabs <- jurid_vars[[i]]
-    for (tab in lab_tabs){
-        col <- cols[[tab]]
-        size <- length(col) -2 - vars_interet_length
-        sizes <- c(sizes,size)
-    }
-    sizes_list[[lab_paire]] <- sizes
-
-}
-sizes_list
 
 
-col=cols[[1]]
-
-#-----------------------------------------------------------
-# Step 6 : write CSV 
-
-
-
-
-
-#-----------------------------------------
-#Read EPCI 1 et EPCI 2 de la dir
-
-files <- list.files(
-        paste("./inputs/", dir, "/infra_dep", sep = ""),
-        all.files = FALSE
-)
-
-file <- files[2]
-PATH <- paste("./inputs/", dir, "/infra_dep/", file, sep = "")
-
-#// TO DO : Plusieurs formats possible pour les fichiers EPCI
-
-
-nb_sheet <-get_num_sheets_in_ods(PATH)
-# Parcourir les differentes feuilles 
-list_table <- c()
-list_names <-c()
-for (sheet in 1:nb_sheet){
-    tmp_table <- read_ods(path=PATH,sheet = sheet)
-    list_table <-append(list_table,list(colnames(tmp_table)))
-    list_names <- c(list_names,paste(file,sheet,sep="/"))
-}
-names(list_table) =list_names
-
-list_table
-#Liste table contient la localisation de la table + le nom des variables présentes
-
-
-#-----------------------
-# Detect I and EPCI vars
-res <-rep(NA,length(list_table))
-
+# On supprime les autres variables
 counter=1
-for (el in list_table){
-    ind_EPCI <- which(str_detect(el,"EPCI|epci"))
-    print(ind_EPCI)
-    print(length(ind_EPCI))
-    print("--------------")
-    if(length(ind_EPCI)==0){
-        res[counter]="out"
+for(col in cols){
+    I <- c("nb_etab","eff_31","eff_EQTP","rem_brut","non_annexe")
+    incompressible_vars<-c(I,rename_typo,rename_jurid,"EPCI")
+    del_index=which(!(col %in% incompressible_vars))
+    
+    if (del_index%>% length >0){
+        cols[[counter]]= col[- del_index]
+        table=tables[[counter]]
+        tables[[counter]]=table[,-del_index]
     }
-    counter=counter+1
+    counter= counter+1
+}
+
+# On join les bonne paire de table
+for(i in 1:length(tables)){
+    table<-tables[[i]]
+    colnames(table)<- cols[[i]]
+    tables[[i]]=table
 }
 
 
+for (col_moda in unique(cols)){
+    merge_table<-c()
+    counter=1
+    for (col in cols){
+        
+        if(length(col)==length(col_moda)){
+            if(all(col==col_moda)){
+                merge_table <- c(merge_table,counter)
+            }
+        }
+        counter <- counter+1
+    }
 
+    
+    # Add LIBGEO +Dep INFO
+    table <-tables[[merge_table[1]]]
+    
+    if(length(merge_table)>1){
+        for (i in 2: length(merge_table)){
+            table <-rbind(table,tables[[merge_table[i]]])
+        }
+    }
+    table <-table%>% left_join(geo_file,by="EPCI")
+    print(colnames(table))
+    # Write csv with the good name
 
+    if(intersect(col_moda,rename_typo)%>% length ==0){
+        filename="EPCI_T1"
+    }else if(rename_typo[1] %in% col_moda){
+       filename="EPCI_T2"
+    }else{
+        filename="EPCI_T3"
+    }
+    write.csv(table,
+        paste("./outputs/",dir,"/",filename,".csv",sep="")
+    )
+}
 
-
-
-tmp_table=read_ods(PATH)
-tmp_table = left_join(tmp_table,data_decoup_geo,by="EPCI")
-write.csv(tmp_table,paste("./outputs/",filename,sep=""))
-
-#On load tous les fichier présents!
-
-
-#---------------------------------------------------------------------
-
-
-pattern=c("juridr","jurid2",colnames(tmp_table))
-str_detect(pattern,"jurid$")#ne detect que juri
-str_detect(pattern,"jurid")
+# To Add : 
+# Prendre en compte que T1 et T3 ne doivent pas avoir des numeros d'EPCI similaire : Utilisation de interesct et setdiff
