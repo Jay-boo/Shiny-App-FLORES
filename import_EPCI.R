@@ -27,34 +27,54 @@ geo_file <- read_excel(PATH)
 geo_file<-geo_file %>% select(dep_epci,siren_epci,nom_complet) %>% unique
 colnames(geo_file)[which(colnames(geo_file) == "siren_epci")] <- "EPCI"
 
-EPCI_files <- list.files(
+EPCI_ods_files <- list.files(
     paste("./inputs/", dir, "/infra_dep", sep = ""),
+    pattern=".ods",
     all.files = FALSE
 )
 
+EPCI_xls_files <- list.files(
+    paste("./inputs/", dir, "/infra_dep", sep = ""),
+    pattern=".xls",
+    all.files = FALSE
+)
+
+
 tables <- list()
-labels <-c()
-cols <-list()
-for (file in EPCI_files) {
-    PATH <- paste("./inputs/",dir, "/infra_dep/",file,sep= "")
+labels <- c()
+cols <- list()
+
+
+for (file in EPCI_ods_files) {
+    PATH <- paste("./inputs/",dir, "/infra_dep/",file, sep = "")
     nb_sheet <- get_num_sheets_in_ods(PATH)
     for (sheet in 1: nb_sheet) {
         tmp_table <- read_ods(path = PATH, sheet = sheet)
-        labels <- c(labels,paste(file, sheet,sep = "/"))
+        labels <- c(labels, paste(file, sheet,sep = "/"))
         tables <- append(tables, list(tmp_table))
         cols <- append(cols, list(colnames(tmp_table)))
     }
 }
+
+
+
+for (file in EPCI_xls_files) {
+    PATH <- paste("./inputs/",dir, "/infra_dep/", file, sep = "")
+    nb_sheet <- excel_sheets(PATH) %>% length
+    for (sheet in 1: nb_sheet) {
+        tmp_table <- read_excel(path = PATH, sheet = sheet)
+        labels <- c(labels, paste(file, sheet,sep = "/"))
+        tables <- append(tables, list(tmp_table))
+        cols <- append(cols, list(colnames(tmp_table)))
+    }
+}
+
 names(tables) <- labels
 names(cols) <- labels
+checkpoint_cols <- cols
+checkpoint_tables <- tables
 
-checkpoint_cols <-cols
-checkpoint_tables <-tables
 
-#cols=NULL
-#tables=NULL
-#cols=checkpoint_cols
-#tables= checkpoint_tables
 
 #-------------------------------
 # Step 2 : Detect EPCI var
@@ -69,9 +89,9 @@ for (col in cols){
     }else{
         col[ind_EPCI] <- "EPCI"
         if(ind_EPCI != 1 ){
-            tmp_table<-tables[[counter]]
+            tmp_table <- tables[[counter]]
             EPCI_col <- tmp_table[,ind_EPCI]
-            tmp_table<-cbind(EPCI_col,tmp_table[, -ind_EPCI]) %>% as.data.frame
+            tmp_table <- cbind(EPCI_col,tmp_table[, -ind_EPCI]) %>% as.data.frame
             tables[[counter]]<-tmp_table
             cols[[counter]]<-c("EPCI",col[-ind_EPCI])
         }
@@ -86,10 +106,7 @@ tables[del_index] <-rep(NULL,length(del_index))
 
 
 
-cols<-append(cols,list(
-    "test"=c("EPCI",)
-))
-sapply(tables,FUN=function(i){return(colnames(i))})
+
 
 counter=1
 for (col in cols) {
@@ -134,9 +151,9 @@ for (col in cols) {
     
     index_min <- min(indexes)
     del_ind<-c()
-    for ( i in index_min: length(col)){
+    for ( i in index_min: length(col)) {
         if( !(i %in% indexes)){
-            del_ind<-c(del_ind,i)
+            del_ind <- c(del_ind,i)
         }
     }
     
@@ -150,7 +167,7 @@ for (col in cols) {
     }
     cols[[counter]] = col
     
-    counter=counter+1
+    counter = counter+1
 }
 
 
@@ -166,24 +183,24 @@ jurid_vars_names<-sapply(cols,FUN=function(i){
 while(length(jurid_vars) < length(jurid_vars_names)){
     jurid_vars <-append(jurid_vars,list(c()))
 }
-names(jurid_vars)=jurid_vars_names
+names(jurid_vars) = jurid_vars_names
 
-rename_jurid<-c()
-counter=1
+rename_jurid <- c()
+counter = 1
 while(length(rename_jurid) < length(jurid_vars)){
-    rename_jurid <- c(rename_jurid,paste("jurid",counter,sep=""))
-    counter= counter+1
+    rename_jurid <- c(rename_jurid,paste("jurid", counter, sep = ""))
+    counter = counter+1
 }
 
 del_index <- c()
 counter=1
-for (col in cols){
-    ind_jurid_var <- which(str_detect(col,"jurid"))
+for (col in cols) {
+    ind_jurid_var <- which(str_detect(col, "jurid"))
     
-    if (ind_jurid_var %>% length ==1){
-        lab <-col[ind_jurid_var]
-        col[ind_jurid_var] <-rename_jurid[which(names(jurid_vars)==lab)]
-        cols[[counter]]<-col
+    if (ind_jurid_var %>% length == 1){
+        lab <- col[ind_jurid_var]
+        col[ind_jurid_var] <- rename_jurid[which(names(jurid_vars) == lab)]
+        cols[[counter]] <- col
         jurid_vars[[lab]] <- c(jurid_vars[[lab]],names(cols)[counter])
     }else{
         #On enleve la table
@@ -198,8 +215,6 @@ names(jurid_vars) <- rename_jurid
 #------------------------------------------------------
 # Step 5 : Detect typo vars +  Rename typo1 and typo2
 
-cols
-jurid_vars
 
 typo_vars_names<-sapply(cols,FUN=function(i){
     detect <-which(str_detect(i,"typ|Typ|TYP"))
@@ -222,7 +237,6 @@ while(length(rename_typo) < length(typo_vars_names)){
     rename_typo <- c(rename_typo,paste("typo",counter, sep=""))
     counter= counter+1
 }
-rename_typo
 
 #Rename cols
 counter=1
