@@ -60,7 +60,7 @@ rename_var_ods_tables <- function(data) {
     list_index <- append(list_index, list("nb_ent" = ind_ent_pot))
 
     ind_etab_pot <-which(
-        (str_detect(colnames(data),"Nombre|nombre|nb|NB|NOMBRE")) &  (str_detect(colnames(data),"etb|etab|Etab|étab"))
+        (str_detect(colnames(data),"Nombre|nombre|nb|NB|NOMBRE")) &  (str_detect(colnames(data),"etb|etab|Etab|étab|ablissement"))
     )
     list_index <- append(list_index, list("nb_etab" = ind_etab_pot))
 
@@ -75,7 +75,7 @@ rename_var_ods_tables <- function(data) {
     list_index <- append(list_index, list("eff_EQTP" = ind_eff_EQTP_pot))
 
     ind_remBrute_pot<-which(
-        (str_detect(colnames(data),"Rem|rem|Rém|rém|REM") & str_detect(colnames(data),"brut|brt|BRT|Brt|BRUT"))
+        (str_detect(colnames(data),"Rem|rem|Rém|rém|REM|mun") & str_detect(colnames(data),"brut|brt|BRT|Brt|BRUT"))
     )
     list_index <- append(list_index, list("rem_brut" = ind_remBrute_pot))
 
@@ -85,7 +85,7 @@ rename_var_ods_tables <- function(data) {
     list_index <- append(list_index, list("REG" = ind_reg_pot))
 
     ind_dep_pot <- which(
-        str_detect(colnames(data), "DEP|dep|Dép|Dep")
+        str_detect(colnames(data), "DEP|dep|Dép|Dep|artement")
     )
     list_index <- append(list_index, list("DEP" = ind_dep_pot))
 
@@ -224,7 +224,10 @@ rename_var_ods_tables <- function(data) {
     #--------------------------
     #Check  the list_index
     
-    if (ncol(data)!=sapply(list_index,length) %>% sum){break}
+    if (ncol(data)!=sapply(list_index,length) %>% sum){
+        print(list_index)
+        break
+        }
     
     #----------------------------
     # Rename all columns
@@ -443,10 +446,17 @@ import_files <- function(files_list){
     
 
     for (file in files_list){
-
+        tmp=str_split(file,"/")[[1]][-1]
+        
         PATH = list(
-            c("root","directory","scale","filename")<- str_split(file,"/")[-1]
+            
+            "root"=tmp[1],
+            "directory"=tmp[2],
+            "scale"=tmp[3],
+            "filename"=tmp[4]
+
         )
+        
 
         if(!dir.exists(paste("./outputs/", PATH[["directory"]], sep = ""))) {
             dir.create(paste("./outputs/", PATH[["directory"]], sep = ""))
@@ -469,8 +479,10 @@ import_files <- function(files_list){
         colnames(data) <- data[1,]
         data <- data[-1,]
         # 2.Rename var step
+        
         data <- rename_var_ods_tables(data)
         # 3.Get TC number refering
+        
         filename <- detect_TC_number(data)
 
         report_import<-rbind(report_import,c(PATH[["directory"]],"reg_dep",PATH[["filename"]]))
@@ -483,5 +495,4 @@ import_files <- function(files_list){
     }
     write.csv(report_import,"./inputs/report_imports.csv",row.names=FALSE)
 }
-
 

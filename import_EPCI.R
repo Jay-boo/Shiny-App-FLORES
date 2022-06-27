@@ -4,7 +4,7 @@
 
 
 
-rm(list=ls())
+
 library("readxl")# Can read xls and xlsx files with the same function read_excel
 library(tidyverse)
 library(dplyr)
@@ -12,11 +12,11 @@ library(readODS)
 
 
 
-import_EPCI <- function (dirs=NULL,all=TRUE) {
+import_EPCI <- function (dirs=NULL) {
     # Need entire path of the directory
     report_import <- read.csv("./inputs/report_imports.csv")
 
-    if(all){
+    if(is.null(dirs)){
         directories <- list.dirs("./inputs/", recursive = FALSE, full.names = FALSE)
     }else{
         directories= dirs
@@ -325,8 +325,5 @@ import_EPCI <- function (dirs=NULL,all=TRUE) {
 }
 
 
-import_EPCI_files <-function(){
-    
-}
 
-import_EPCI()
+

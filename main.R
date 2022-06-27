@@ -1,5 +1,14 @@
 rm(list=ls())
 
 source("update.R")
-#Only create missing_imports list 
-print(missing_imports)
+# Create  missing_imports list + Import the missing_files 
+
+
+#-------------------------------------
+# Transition between update fct and importation
+
+
+
+
+
+
