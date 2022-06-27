@@ -1,6 +1,7 @@
 #-------------------------------------
 # update.R 
 # Mission : Detect new files to update
+# Start dealing with EPCI
 #------------------------------------
 
 #-------------------------
