@@ -66,6 +66,9 @@
 
 Il manque certaine table : TC5 , TC17 , TC25 et TC25 bis inexistant pour 2017
 
+
+- On ne peux pas importer un unique fichier EPCI , on le fais uniqument par directory
+
 #### To do :
 
 - [X] Add typology detection in the `main.R`
@@ -84,6 +87,4 @@ Remarque : Ici ce n'est pas grave de le stocker en local , il n'a pas vocation Ã
 Structure du report: 
 directory(year) |scale | filename
 
-### EPCI problem
 
-https://www.insee.fr/fr/information/2510634
