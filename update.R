@@ -89,7 +89,7 @@ for (dir in common_directories) {
 #    Start importing tables
 #
 #-----------------------------------------------------
-
+print(missing_imports)
 source("import_VF.R")
 source("import_EPCI.R")
 
