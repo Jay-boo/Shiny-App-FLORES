@@ -1,4 +1,5 @@
 # Start with update
+# Be sure RAM is empty at start
 rm(list=ls())
 
 source("update.R")
