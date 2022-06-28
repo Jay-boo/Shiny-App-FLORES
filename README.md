@@ -88,3 +88,9 @@ Structure du report:
 directory(year) |scale | filename
 
 
+<hr/>
+
+## Starting coding the UI 
+  &rarr; Objectiv : Finish DashBoard UI by the end of the week
+
+
