@@ -83,7 +83,6 @@ for (dir in common_directories) {
 }
 
 
-
 #---------------------------------------------------
 #
 #    Start importing tables
