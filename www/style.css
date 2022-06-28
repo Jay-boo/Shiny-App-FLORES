@@ -20,7 +20,7 @@ body {
 }
   
 .active[data-tab-info] {
-    display: block;
+    display: flex;
 }
 
 /*----------------HEADERS-----------*/
@@ -57,7 +57,9 @@ body {
     border-radius: 10px;
 }
 
-.tabs-content {
+
+
+.active{
     background-color: rgb(22, 112, 151);
     width: 95%;
     margin-top: 2%;
@@ -66,8 +68,14 @@ body {
     font-family: 'Montserrat';
     color: rgb(82, 75, 75);
     border-radius: 10px;
-    
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content: center;
 }
+
+
+
 
 
 
@@ -75,9 +83,50 @@ body {
 /*------------------------DASHBOARD part----------------------------*/
 
 .dashboard-key-container{
-    background-color: brown;
+    background-color: rgb(215, 245, 255);
+    width: 95%;
+    border-radius: 10px;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    
+    
 }
 
+
 .reg-dep-EPCI-container{
-    background-color: azure;
+    font-size: 20px;
+    background-color: rgb(215, 245, 255);
+    width: 95%;
+    border-radius: 10px;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+/*COntainer of the trio in the dashboard head*/
+.dashboard-key-trio-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 1%;
+    width: 90%;
+
+}
+
+
+.dashboard-key{
+    font-size: 15px;
+    color: whitesmoke;
+    background-color: rgb(48, 76, 89);
+    width: 30%;
+    border-radius: 10px;
+    
 }
