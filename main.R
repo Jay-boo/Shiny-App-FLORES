@@ -1,3 +1,4 @@
+# Start with update
 rm(list=ls())
 
 source("update.R")
