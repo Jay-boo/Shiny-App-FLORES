@@ -6,6 +6,7 @@
   <script src="shared/shiny.js" type="text/javascript"></script>
   <link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
   <link rel="stylesheet" href="style.css">
+  {{headContent()}}
 </head>
 
 
@@ -35,6 +36,7 @@
         
           <div class="dashboard-key" id="etab">
             <span> d'établissements dans la region Grand Est </span>
+            {{pieChart_etab}}
           </div>
 
           <div class="dashboard-key" id="emploi">
@@ -43,6 +45,7 @@
 
           <div class="dashboard-key" id="masse_salariale">
             <span> de masse salariale dans la region Grand Est </span>
+            {{pieChart_rem}}
           </div>
         </div>
 

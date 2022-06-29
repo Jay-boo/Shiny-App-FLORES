@@ -3,6 +3,10 @@
  -  `import.R` : Import the different tables -> detect columns -> rename columns -> detect wich TC is referenced  -> write csv file with the according filename 
 
 
+https://rstudio.github.io/r2d3/articles/data_conversion.html
+Can help : https://datatricks.co.uk/creating-a-d3-js-bar-chart-in-r
+
+
 <hr/>
 <br/>
 
