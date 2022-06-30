@@ -4,10 +4,11 @@
 
 var id_container=options.id_container;
 var background_c=options.background_color;
-var width=document.getElementById(id_container).offsetWidth*0.8;
-var height= document.getElementById(id_container).offsetHeight*0.8;
-const radius=(width/2)-0.1* width;
-const padding=10;
+//var width=document.getElementById(id_container).offsetWidth*0.8;
+//var height= document.getElementById(id_container).offsetHeight*0.8;
+var min_dim= Math.min(width,height);
+var radius=(min_dim/2)-0.1* min_dim;
+const padding=5;
 
 pie = d3.pie()
     .value(d => d.nb_etab);
