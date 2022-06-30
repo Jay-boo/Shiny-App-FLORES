@@ -12,6 +12,10 @@ pieChart_etab = d3Output("pieChart_etab")
 pieChart_rem=d3Output("pieChart_rem")
 
 server <- function(input,output){
+
+
+    #--------------------------------------------------------------
+    # Headers
     TC1 <-read.csv("./outputs/2017/TC1.csv")
     data_for_plot<-TC1 %>% filter(typo_A_det=="Ensemble" & typo_A=="Ensemble des secteurs d'activité" & famille=="Ensemble" & ESS=="ESS + Hors ESS")%>% select(DEP, rem_brut)
     data_for_plot$rem_brut<-as.numeric(data_for_plot$rem_brut)
@@ -24,17 +28,18 @@ server <- function(input,output){
     
     
     
-    output$plot <- renderPlot({
-        barplot(rem_brut ~ DEP,data=data_for_plot)
-    })
+    #---------------------------------
+    # DASHBOARD
 
+    #----------------
+    # Dashboard key
     output$pieChart_etab <- renderD3({
         tmp_data <- df %>% select(REG, nb_etab)
         tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
         r2d3(
             data = tmp_data,
             script ="www/assets/pieChart.js",
-            options = list(width=100,height=100,background_color='rgb(48, 76, 89)')
+            options = list(id_container="pieChart_etab",background_color='rgb(48, 76, 89)')
         )
     })
 
@@ -45,9 +50,40 @@ server <- function(input,output){
         r2d3(
             data = tmp_data,
             script ="www/assets/pieChart.js",
-            options = list(width=100,height=100,background_color='rgb(48, 76, 89)')
+            options = list(id_container="pieChart_rem",background_color='rgb(48, 76, 89)')
         )
     })
+
+    output$nb_etab_txt_FR<- renderText({
+        df<-df %>%filter(tolower(REG) == "france entière")%>% select(nb_etab)
+        paste(df[[1]], " établissements dans la France Entière")
+    })
+
+    output$nb_etab_txt_GE<- renderText({
+        df<-df %>%filter(REG == "Bourgogne-Franche-Comté")%>% select(nb_etab)
+        paste(df[[1]], " établissements dans la region Grand Est")
+    })
+
+
+    output$masse_salariale_txt_GE <-renderText({
+        GE <- df %>%filter(REG == "Bourgogne-Franche-Comté")%>% select(rem_brut)
+        paste(GE[[1]], "€ de masse salariale dans la région Grand-Est\n")
+    })
+    output$masse_salariale_txt_FR <-renderText({
+        FR <- df %>%filter(tolower(REG) == "france entière")%>% select(rem_brut)
+        paste(FR[[1]], "€ de masse salariale en France Entière\n")
+    })
+
+
+
+    #---------------------------------
+    #   Dashboard part EPCI
+
+    output$plot <- renderPlot({
+        barplot(rem_brut ~ DEP,data=data_for_plot)
+    })
+
+
 
     
 

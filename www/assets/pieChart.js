@@ -2,13 +2,12 @@
 
 
 
-var width=options.width;
-var height=options.height;
+var id_container=options.id_container;
 var background_c=options.background_color;
-const radius=width/2;
+var width=document.getElementById(id_container).offsetWidth*0.8;
+var height= document.getElementById(id_container).offsetHeight*0.8;
+const radius=(width/2)-0.1* width;
 const padding=10;
-
-
 
 pie = d3.pie()
     .value(d => d.nb_etab);
@@ -85,7 +84,7 @@ arc.append("path")
 const labels=arc.append("g")
   .attr("transform",v=> `translate(${label.centroid(v)})`)
   .attr('text-anchor', 'middle')
-    .style('fill', 'white')
+    .style('fill', 'black')
     .style('font-size', '75%')
     .style('display', v => v.endAngle - v.startAngle > textThreshold ? 'inline' : 'none');
 
