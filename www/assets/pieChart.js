@@ -1,7 +1,4 @@
-
-
-
-
+svg.selectAll('g').remove();
 var id_container=options.id_container;
 var background_c=options.background_color;
 

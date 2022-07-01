@@ -11,9 +11,9 @@ library(r2d3)
 
 #-------------------------------
 # D3 output
-pieChart_etab = d3Output("pieChart_etab",height = "300px")
-pieChart_rem= d3Output("pieChart_rem",height = "300px")
-pieChart_emploi = d3Output("pieChart_emploi",height = "300px")
+pieChart_etab = d3Output("pieChart_etab",height = "70%")
+pieChart_rem= d3Output("pieChart_rem",height = "70%")
+pieChart_emploi = d3Output("pieChart_emploi",height = "70%")
 
 
 
@@ -67,7 +67,6 @@ server <- function(input,output){
     # DASHBOARD
     dataDashBoard_PATH <-reactive({
         PATH = paste("./outputs/",input$dashboard_year_select,"/",sep="")
-        print(PATH)
         return(PATH)
 
     })
@@ -164,8 +163,8 @@ server <- function(input,output){
         paste(GE[[1]], "€ de masse salariale dans la région Grand-Est\n")
     })
     output$masse_salariale_txt_FR <-renderText({
-        FR <- TC13_dashboard() %>%filter(tolower(REG) == "france entière")%>% select(rem_brut)
-        paste(FR[[1]], "€ de masse salariale en France Entière",input$dashboard_year_select)
+        FR <- TC13_dashboard() %>% filter(tolower(REG) == "france entière")%>% select(rem_brut)
+        paste(FR[[1]], "€ de masse salariale en France Entière")
     })
 
 

@@ -5,8 +5,8 @@
   <script src="shared/jquery.js" type="text/javascript"></script>
   <script src="shared/shiny.js" type="text/javascript"></script>
   <link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
-  <link rel="stylesheet" href="styles/style-tabs.css">
-  <link rel="stylesheet" href="styles/style-dashboard.css">
+  <link rel="stylesheet" href="style-tabs.css">
+  <link rel="stylesheet" href="style-dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   {{headContent()}}
 </head>
@@ -40,38 +40,45 @@
         <div class="dashboard-key-trio-container">
         
           <div class="dashboard-key" id="etab">
-            <span>
-               <i class="fas fa-angle-right"></i> <span id="nb_etab_txt_FR" class="shiny-text-output"></span>
-            </span>
-            
-            <span style="margin-left:10% ;">
-               <i class="fas fa-angle-right"></i> <span id="nb_etab_txt_GE" class="shiny-text-output"></span>
-            </span>
-            
-            {{pieChart_etab}}
+            <div class="dashboard-key-flex">
+              <span>
+                <i class="fas fa-angle-right"></i> <span id="nb_etab_txt_FR" class="shiny-text-output"></span>
+              </span>
+             
+              <span style="margin-left:10% ;">
+                <i class="fas fa-angle-right"></i> <span id="nb_etab_txt_GE" class="shiny-text-output"></span>
+              </span>
+             
+             {{pieChart_etab}}
+            </div>
           </div>
 
           <div class="dashboard-key" id="emploi">
-            <span>  
-              <i class="fas fa-angle-right"></i> <span id="emploi_txt_FR" class="shiny-text-output" ></span>
-            </span>
-            
-            <span  style="margin-left:10% ;"> 
-               <i class="fas fa-angle-right"></i> <span id="emploi_txt_GE" class="shiny-text-output"></span> 
-            </span>
-            {{pieChart_emploi}}
+            <div class="dashboard-key-flex">
+              <span>  
+                <i class="fas fa-angle-right"></i> <span id="emploi_txt_FR" class="shiny-text-output" ></span>
+              </span>
+
+              <span  style="margin-left:10% ;"> 
+                 <i class="fas fa-angle-right"></i> <span id="emploi_txt_GE" class="shiny-text-output"></span> 
+              </span>
+              {{pieChart_emploi}}
+            </div>
           </div>
 
           <div class="dashboard-key" id="masse_salariale">
-            <span>  
-              <i class="fas fa-angle-right"></i> <span id="masse_salariale_txt_FR" class="shiny-text-output" ></span>
-            </span>
+            <div class="dashboard-key-flex">
+              <span>  
+                <i class="fas fa-angle-right"></i> <span id="masse_salariale_txt_FR" class="shiny-text-output" ></span>
+              </span>
             
-            <span  style="margin-left:10% ;"> 
-               <i class="fas fa-angle-right"></i> <span id="masse_salariale_txt_GE" class="shiny-text-output"></span> 
-            </span>
+              <span  style="margin-left:10% ;"> 
+                 <i class="fas fa-angle-right"></i> <span id="masse_salariale_txt_GE" class="shiny-text-output"></span> 
+              </span>
 
-            {{pieChart_rem}}
+              {{pieChart_rem}}
+
+            </div>
           </div>
         </div>
 
