@@ -89,3 +89,7 @@
     align-items: center;
     justify-content: center;
 }
+
+.my_class .selectize-dropdown-content > .option {
+    background-color: rgb(236, 23, 23);
+ }
