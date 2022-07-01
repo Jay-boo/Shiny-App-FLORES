@@ -15,7 +15,7 @@ path= d3.arc()
 
 color = d3.scaleOrdinal()
     .domain(data)
-    .range(d3.schemePastel1);
+    .range(["#0c4493","#5b89cc"]);
 
 
 
@@ -55,8 +55,9 @@ const arc = g.selectAll('.arc')
                   	d3.select(event.currentTarget).select('path')
                   		.transition()
                   		.duration(duration)
-                  		.attr('stroke', 'rgba(100, 100, 100, 0.2)')
+                        .attr('stroke', 'rgba(100, 100, 100, 0.2)')
                   		.attr('stroke-width', 4);
+                  		
                   	d3.select('.card-back text').text(v.data.REG);
   				})
         .on('mouseout', (event, v) => {
@@ -67,21 +68,23 @@ const arc = g.selectAll('.arc')
                   d3.select(event.currentTarget).select('path')
                   		.transition()
                   		.duration(duration)
-                  		.attr('stroke', 'white')
+                        .attr('stroke', 'white')
                   		.attr('stroke-width', 1);
+                  		
                 });
 
 arc.append("path")
   .attr("d",path)
   .attr("fill",function(d){return color(d.data.REG)})
   .attr('stroke', 'white');
+  
 
 
 
 const labels=arc.append("g")
   .attr("transform",v=> `translate(${label.centroid(v)})`)
   .attr('text-anchor', 'middle')
-    .style('fill', 'black')
+    .style('fill', 'white')
     .style('font-size', '75%')
     .style('display', v => v.endAngle - v.startAngle > textThreshold ? 'inline' : 'none');
 

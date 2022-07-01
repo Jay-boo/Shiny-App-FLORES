@@ -104,3 +104,22 @@
     justify-content: center;
     margin-bottom: 5%;
 }
+
+#dashboard_year_select {
+    background-color: whitesmoke;
+    padding: 0.5rem;
+    border: none;
+    box-shadow: none;
+    font-weight: bold;
+    border-radius: 5px;
+    margin-bottom: 1%;
+
+}
+
+#dashboard_year_select:hover {
+    background-color: rgb(197, 184, 184);
+    padding: 0.5rem;
+
+    
+
+}
