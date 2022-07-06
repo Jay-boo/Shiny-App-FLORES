@@ -7,8 +7,8 @@ const margin={top:10,
     bottom:10,
     left:10};
 
-const innerRadius=150;
-const outerRadius=Math.min(width,height)/2;
+const innerRadius=50;
+const outerRadius=Math.min(width,height)/2.5;
 var background_c=options.background_color;
 var title=options.title;
 

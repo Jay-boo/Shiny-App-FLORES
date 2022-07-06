@@ -14,9 +14,9 @@ library(r2d3)
 pieChart_etab = d3Output("pieChart_etab",height = "70%")
 pieChart_rem= d3Output("pieChart_rem",height = "70%")
 pieChart_emploi = d3Output("pieChart_emploi",height = "70%")
-barPlot_famille_etab = d3Output("barPlot_famille_etab",height="30%",width = "80%")
-barPlot_famille_eff31 = d3Output("barPlot_famille_eff31",height="30%",width = "80%")
-barPlot_famille_nb_emploi=d3Output("barPlot_famille_nb_emploi",height="30%",width = "80%")
+barPlot_famille_etab = d3Output("barPlot_famille_etab",height="20%",width = "40%")
+barPlot_famille_eff31 = d3Output("barPlot_famille_eff31",height="20%",width = "40%")
+barPlot_famille_nb_emploi=d3Output("barPlot_famille_nb_emploi",height="25%",width = "50%")
 
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
@@ -179,13 +179,14 @@ server <- function(input,output){
     output$barPlot_famille_etab <- renderD3({
         tmp_data <- TC13_dashboard_bis() %>% select(famille, nb_etab)
         tmp_data<-tmp_data %>% filter(tolower(famille)!="ensemble")
+        tmp_data$nb_etab<-as.numeric(tmp_data$nb_etab)
         colnames(tmp_data)<-c("country","value")
         tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
         r2d3(
             data = tmp_data,
             script ="www/assets/barplot_circular.js",
             options = list(
-                background_color = 'rgb(197, 184, 184)',
+                background_color = 'rgb(215, 245, 255)',
                 title="Nombre établissements par forme juridique"
             )
         )
@@ -194,13 +195,14 @@ server <- function(input,output){
     output$barPlot_famille_eff31 <- renderD3({
         tmp_data <- TC13_dashboard_bis() %>% select(famille, eff_31)
         tmp_data<-tmp_data %>% filter(tolower(famille)!="ensemble")
+        tmp_data$eff_31<-as.numeric(tmp_data$eff_31)
         colnames(tmp_data)<-c("country","value")
         tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
         r2d3(
             data = tmp_data,
             script ="www/assets/barplot_circular.js",
             options = list(
-                background_color = 'rgb(197, 184, 184)',
+                background_color = 'rgb(215, 245, 255)',
                 title="Effectifs par forme juridique"
             )
         )
@@ -210,14 +212,14 @@ server <- function(input,output){
         tmp_data <- TC16_dashboard_bis() %>% 
             filter(tolower(sexe)!="ensemble" & tolower(famille)=="ensemble")%>%
             select(sexe, nb_poste)
-        
+        tmp_data$nb_poste<-as.numeric(tmp_data$nb_poste)
         colnames(tmp_data)<-c("country","value")
         tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
         r2d3(
             data = tmp_data,
             script ="www/assets/barplot_circular.js",
             options = list(
-                background_color = 'rgb(197, 184, 184)',
+                background_color = 'rgb(215, 245, 255)',
                 title = "Repartition Homme Femmes"
             )
         )

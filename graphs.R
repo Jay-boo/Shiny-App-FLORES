@@ -63,6 +63,10 @@ TC13$famille<-sapply(TC13_famille_tmp,FUN = function(i){
         return(i[1])
     }
 })
+TC13$nb_etab<-TC13$nb_etab%>% as.double
+TC13$eff_31<-TC13$eff_31%>% as.double
+
+
 TC16 <-read.csv("./outputs/2017/TC16.csv")
 TC16_famille_tmp<-strsplit(TC16$famille,"[.]")
 TC16$famille<-sapply(TC16_famille_tmp,FUN = function(i){
@@ -77,11 +81,23 @@ TC16$famille<-sapply(TC16_famille_tmp,FUN = function(i){
 barplot_1<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")%>%
     select(famille,nb_etab)
 
-barplot_2<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")
+skimr::skim(barplot_1)
+
+barplot_2<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")%>%
     select(famille,eff_31)
+
+skimr::skim(TC13)
 
 barplot_3<-TC16%>% filter(sexe=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & type_emploi=="Ensemble")%>%
     select(famille,nb_poste)
+
+tmp<-barplot_2%>% filter(famille!="Ensemble")
+tmp$eff_31<-is.numeric(tmp$eff_31)
+
+skimr::skim(tmp)
+colnames(tmp)<-c("country","value")
+jsonlite::toJSON(tmp,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+
 
 #-----------------------------------
 # MAP
