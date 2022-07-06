@@ -14,16 +14,18 @@ library(r2d3)
 pieChart_etab = d3Output("pieChart_etab",height = "70%")
 pieChart_rem= d3Output("pieChart_rem",height = "70%")
 pieChart_emploi = d3Output("pieChart_emploi",height = "70%")
-
-
+barPlot_famille_etab = d3Output("barPlot_famille_etab",height="30%",width = "80%")
+barPlot_famille_eff31 = d3Output("barPlot_famille_eff31",height="30%",width = "80%")
+barPlot_famille_nb_emploi=d3Output("barPlot_famille_nb_emploi",height="30%",width = "80%")
 
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
     selectbox_HTML=paste(selectbox_HTML,'<option value="',choice,'">',choice,'</option>',sep="")
 }
-selectbox_HTML
-dashboard_select_Input_YEARS=HTML(paste('<select id="dashboard_year_select">',selectbox_HTML,'</select>',sep=""))
 
+dashboard_select_Input_YEARS_key=HTML(paste('<select id="dashboard_year_select_key">',selectbox_HTML,'</select>',sep=""))
+
+dashboard_select_Input_YEARS_part2=HTML(paste('<select id="dashboard_year_select_part2">',selectbox_HTML,'</select>',sep=""))
 
 
 #---------------------------------
@@ -35,38 +37,16 @@ dashboard_select_Input_YEARS=HTML(paste('<select id="dashboard_year_select">',se
 # Server
 
 server <- function(input,output){
-    #--------------------------------------------------------------
-    # Headers
-    TC1 <-read.csv("./outputs/2017/TC1.csv")
-    #TC13 <-read.csv("./outputs/2017/TC13.csv")
-    #TC16 <- read.csv("./outputs/2017/TC16.csv")
-    #
-#
-    TC1<-TC1 %>% filter(typo_A_det=="Ensemble" & typo_A=="Ensemble des secteurs d'activité" & famille=="Ensemble" & ESS=="ESS + Hors ESS")%>% select(DEP, rem_brut)
-    TC1$rem_brut<-as.numeric(TC1$rem_brut)
-    #
-    #
-    #dashboard_key<-TC13 %>% filter(typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble" & famille=="Ensemble" & ESS=="ESS")%>% select(REG,nb_etab,rem_brut)
-    #dashboard_key<-dashboard_key%>% filter(REG %in% c("France entière","Bourgogne-Franche-Comté"))
-    #dashboard_key$nb_etab<-as.numeric(dashboard_key$nb_etab)
-    #dashboard_key$rem_brut<-as.numeric(dashboard_key$rem_brut)
-#
-    #dashboard_key_bis<-TC16 %>% filter(
-    #    tolower(famille)=="ensemble" & 
-    #    tolower(sexe)=="ensemble" & 
-    #    tolower(type_emploi)=="ensemble" &
-    #    ESS=="ESS" & 
-    #    REG %in% c("France entière","Bourgogne-Franche-Comté")
-    #    )%>% select(REG,nb_poste)
-#
-    
-    
-    
+
+    #-------------------------------
+    # INPUTS
+    #   dashboard_year_select_key
+    #   dashboard_year_select_part2
     
     #---------------------------------
     # DASHBOARD
     dataDashBoard_PATH <-reactive({
-        PATH = paste("./outputs/",input$dashboard_year_select,"/",sep="")
+        PATH = paste("./outputs/",input$dashboard_year_select_key,"/",sep="")
         return(PATH)
 
     })
@@ -74,7 +54,7 @@ server <- function(input,output){
          tmp <- read.csv(paste(dataDashBoard_PATH(),"TC13.csv",sep=""))
 
          tmp <- tmp %>% filter(typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble" & famille=="Ensemble" & ESS=="ESS")%>% select(REG,nb_etab,rem_brut)
-         tmp <- tmp%>% filter(REG %in% c("France entière","Bourgogne-Franche-Comté"))
+         tmp <- tmp%>% filter(REG %in% c("France entière","Grand-Est"))
          tmp$nb_etab<-as.numeric(tmp$nb_etab)
          tmp$rem_brut<-as.numeric(tmp$rem_brut)
         return(tmp)
@@ -86,20 +66,12 @@ server <- function(input,output){
         tolower(sexe)=="ensemble" & 
         tolower(type_emploi)=="ensemble" &
         ESS=="ESS" & 
-        REG %in% c("France entière","Bourgogne-Franche-Comté")
+        REG %in% c("France entière","Grand-Est")
         )%>% select(REG,nb_poste)
 
         return(tmp)
     })
 
-
-
-
-
-    #----------------
-    # ALL  Dashboard key INPUT
-    #input$dashboard_year_select
-    
 
     #----------------
     # Dashboard key OUTPUT
@@ -142,7 +114,7 @@ server <- function(input,output){
     })
 
     output$nb_etab_txt_GE<- renderText({
-        tmp<-TC13_dashboard() %>%filter(REG == "Bourgogne-Franche-Comté")%>% select(nb_etab)
+        tmp<-TC13_dashboard() %>%filter(REG == "Grand-Est")%>% select(nb_etab)
         paste(tmp[[1]], " établissements dans la region Grand Est")
     })
 
@@ -153,13 +125,13 @@ server <- function(input,output){
     })
 
     output$emploi_txt_GE<- renderText({
-        val<-TC16_dashboard() %>%filter(REG == "Bourgogne-Franche-Comté")%>% select(nb_poste)
+        val<-TC16_dashboard() %>%filter(REG == "Grand-Est")%>% select(nb_poste)
         paste(val[[1]], " emplois dans la region Grand Est")
     })
 
 
     output$masse_salariale_txt_GE <-renderText({
-        GE <- TC13_dashboard() %>%filter(REG == "Bourgogne-Franche-Comté")%>% select(rem_brut)
+        GE <- TC13_dashboard() %>%filter(REG == "Grand-Est")%>% select(rem_brut)
         paste(GE[[1]], "€ de masse salariale dans la région Grand-Est\n")
     })
     output$masse_salariale_txt_FR <-renderText({
@@ -170,11 +142,89 @@ server <- function(input,output){
 
 
     #---------------------------------
-    #   Dashboard part EPCI
-
-    output$plot <- renderPlot({
-        barplot(rem_brut ~ DEP,data=TC1)
+    #   Dashboard part.2
+    
+    dataDashBoard_PATH_part2 <-reactive({
+        PATH = paste("./outputs/",input$dashboard_year_select_part2,"/",sep="")
+        return(PATH)
     })
+    TC13_dashboard_bis <-reactive({
+        tmp <- read.csv(paste(dataDashBoard_PATH_part2(),"TC13.csv",sep=""))
+        TC13_famille_tmp<-strsplit(tmp$famille,"[.]")
+        tmp$famille<-sapply(TC13_famille_tmp,FUN = function(i){
+            if(length(i)>1){
+                return(i[2])
+            }else{
+                return(i[1])
+            }
+        })
+        tmp <- tmp %>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")
+        
+        return(tmp)
+    })
+    TC16_dashboard_bis<-reactive({
+        tmp<-read.csv(paste(dataDashBoard_PATH_part2(),"TC16.csv", sep = ""))
+        TC16_famille_tmp<-strsplit(tmp$famille,"[.]")
+        tmp$famille<-sapply(TC16_famille_tmp,FUN = function(i){
+            if(length(i)>1){
+                return(i[2])
+            }else{
+                return(i[1])
+            }
+        })
+        tmp<-tmp %>% filter( ESS=="ESS" & REG=="Grand-Est" & type_emploi=="Ensemble")
+        return(tmp)
+    })
+
+    output$barPlot_famille_etab <- renderD3({
+        tmp_data <- TC13_dashboard_bis() %>% select(famille, nb_etab)
+        tmp_data<-tmp_data %>% filter(tolower(famille)!="ensemble")
+        colnames(tmp_data)<-c("country","value")
+        tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+        r2d3(
+            data = tmp_data,
+            script ="www/assets/barplot_circular.js",
+            options = list(
+                background_color = 'rgb(197, 184, 184)',
+                title="Nombre établissements par forme juridique"
+            )
+        )
+    })
+
+    output$barPlot_famille_eff31 <- renderD3({
+        tmp_data <- TC13_dashboard_bis() %>% select(famille, eff_31)
+        tmp_data<-tmp_data %>% filter(tolower(famille)!="ensemble")
+        colnames(tmp_data)<-c("country","value")
+        tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+        r2d3(
+            data = tmp_data,
+            script ="www/assets/barplot_circular.js",
+            options = list(
+                background_color = 'rgb(197, 184, 184)',
+                title="Effectifs par forme juridique"
+            )
+        )
+    })
+
+    output$barPlot_famille_nb_emploi <- renderD3({
+        tmp_data <- TC16_dashboard_bis() %>% 
+            filter(tolower(sexe)!="ensemble" & tolower(famille)=="ensemble")%>%
+            select(sexe, nb_poste)
+        
+        colnames(tmp_data)<-c("country","value")
+        tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+        r2d3(
+            data = tmp_data,
+            script ="www/assets/barplot_circular.js",
+            options = list(
+                background_color = 'rgb(197, 184, 184)',
+                title = "Repartition Homme Femmes"
+            )
+        )
+    })
+
+
+    
 
 
 
@@ -190,10 +240,11 @@ shinyApp(
         pieChart_etab = pieChart_etab,
         pieChart_rem = pieChart_rem,
         pieChart_emploi = pieChart_emploi,
-        dashboard_select_Input_YEARS=dashboard_select_Input_YEARS
+        barPlot_famille_etab=barPlot_famille_etab,
+        barPlot_famille_eff31=barPlot_famille_eff31,
+        barPlot_famille_nb_emploi=barPlot_famille_nb_emploi,
+        dashboard_select_Input_YEARS_key=dashboard_select_Input_YEARS_key,
+        dashboard_select_Input_YEARS_part2=dashboard_select_Input_YEARS_part2
         ),
     server = server
 )
-
-
-
