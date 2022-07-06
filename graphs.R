@@ -81,22 +81,15 @@ TC16$famille<-sapply(TC16_famille_tmp,FUN = function(i){
 barplot_1<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")%>%
     select(famille,nb_etab)
 
-skimr::skim(barplot_1)
-
 barplot_2<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")%>%
     select(famille,eff_31)
-
-skimr::skim(TC13)
 
 barplot_3<-TC16%>% filter(sexe=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & type_emploi=="Ensemble")%>%
     select(famille,nb_poste)
 
-tmp<-barplot_2%>% filter(famille!="Ensemble")
-tmp$eff_31<-is.numeric(tmp$eff_31)
 
-skimr::skim(tmp)
-colnames(tmp)<-c("country","value")
-jsonlite::toJSON(tmp,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+
+
 
 
 #-----------------------------------
@@ -114,9 +107,12 @@ data_map_bis=TC1%>% filter(typo_A_det=="Ensemble" & ESS=="ESS" & DEP %in% DEP_GE
 
 
 # Sending data to r2d3
-#jsonlite::toJSON(data_map,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+tmp_data=jsonlite::toJSON(data_map,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 
-
+r2d3(
+    data = tmp_data,
+    script="www/assets/map_dep.js"
+)
 
 
 #----------------------

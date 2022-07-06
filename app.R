@@ -14,9 +14,10 @@ library(r2d3)
 pieChart_etab = d3Output("pieChart_etab",height = "70%")
 pieChart_rem= d3Output("pieChart_rem",height = "70%")
 pieChart_emploi = d3Output("pieChart_emploi",height = "70%")
-barPlot_famille_etab = d3Output("barPlot_famille_etab",height="20%",width = "40%")
-barPlot_famille_eff31 = d3Output("barPlot_famille_eff31",height="20%",width = "40%")
-barPlot_famille_nb_emploi=d3Output("barPlot_famille_nb_emploi",height="25%",width = "50%")
+barPlot_famille_etab = d3Output("barPlot_famille_etab",height="100%",width = "40%")
+barPlot_famille_eff31 = d3Output("barPlot_famille_eff31",height="100%",width = "40%")
+barPlot_famille_nb_emploi=d3Output("barPlot_famille_nb_emploi",height="25%",width = "35%")
+mapReg=d3Output("mapReg",height ="45%",width = "100%")
 
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
@@ -27,7 +28,7 @@ dashboard_select_Input_YEARS_key=HTML(paste('<select id="dashboard_year_select_k
 
 dashboard_select_Input_YEARS_part2=HTML(paste('<select id="dashboard_year_select_part2">',selectbox_HTML,'</select>',sep=""))
 
-
+DEP_GE=c("08","10","51","52","54","55","57","67","68","88")
 #---------------------------------
 # Pre import 
 
@@ -176,6 +177,31 @@ server <- function(input,output){
         return(tmp)
     })
 
+    TC1_dashboard <-reactive({
+        TC1<-read.csv(paste(dataDashBoard_PATH(),"TC1.csv",sep=""))
+        TC1_dep_num=TC1$DEP %>% as.numeric 
+        for (i in 1: length(TC1_dep_num)){
+            if (!is.na(TC1_dep_num[i]) & TC1_dep_num[i]<10){
+                TC1$DEP[i]<-paste("0",TC1$DEP[i],sep="")
+            } 
+        }
+
+        TC1_famille_tmp<-strsplit(TC1$famille,"[.]")
+        TC1$famille<-sapply(TC1_famille_tmp,FUN = function(i){
+            if(length(i)>1){
+                return(i[2])
+            }else{
+                return(i[1])
+            }
+        })
+        tmp<-TC1 %>% filter(
+        typo_A_det =="Ensemble" &
+        ESS=="ESS" &
+        DEP %in% DEP_GE
+        )
+        return(tmp)
+    })
+
     output$barPlot_famille_etab <- renderD3({
         tmp_data <- TC13_dashboard_bis() %>% select(famille, nb_etab)
         tmp_data<-tmp_data %>% filter(tolower(famille)!="ensemble")
@@ -225,6 +251,23 @@ server <- function(input,output){
         )
     })
 
+    output$mapReg <-renderD3({
+        tmp_data <- TC1_dashboard()%>%
+        filter(
+            typo_A!="Ensemble des secteurs d'activité" &
+            tolower(famille)=="ensemble"
+        )%>%
+        select(DEP,famille,nb_etab)%>% arrange(DEP)
+
+        r2d3(
+            data=tmp_data,
+            script="www/assets/map_dep.js",
+            options = list(
+                background_color = 'rgb(215, 245, 255)'
+            )
+        )
+    })
+
 
     
 
@@ -245,6 +288,7 @@ shinyApp(
         barPlot_famille_etab=barPlot_famille_etab,
         barPlot_famille_eff31=barPlot_famille_eff31,
         barPlot_famille_nb_emploi=barPlot_famille_nb_emploi,
+        mapReg=mapReg,
         dashboard_select_Input_YEARS_key=dashboard_select_Input_YEARS_key,
         dashboard_select_Input_YEARS_part2=dashboard_select_Input_YEARS_part2
         ),
