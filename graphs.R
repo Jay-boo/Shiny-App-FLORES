@@ -76,7 +76,7 @@ TC16$famille<-sapply(TC16_famille_tmp,FUN = function(i){
         return(i[1])
     }
 })
-
+TC16$sexe %>% unique
 
 barplot_1<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")%>%
     select(famille,nb_etab)

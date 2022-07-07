@@ -56,7 +56,7 @@ paths.style("cursor","pointer")
   })
 
   
-var size = width*0.7/keys.length;
+var size = w*0.7/keys.length;
 
 svg.selectAll("mydots")
   .data(keys)

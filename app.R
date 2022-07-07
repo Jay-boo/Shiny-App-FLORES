@@ -14,10 +14,10 @@ library(r2d3)
 pieChart_etab = d3Output("pieChart_etab",height = "70%")
 pieChart_rem= d3Output("pieChart_rem",height = "70%")
 pieChart_emploi = d3Output("pieChart_emploi",height = "70%")
-barPlot_famille_etab = d3Output("barPlot_famille_etab",height="100%",width = "40%")
-barPlot_famille_eff31 = d3Output("barPlot_famille_eff31",height="100%",width = "40%")
-barPlot_famille_nb_emploi=d3Output("barPlot_famille_nb_emploi",height="25%",width = "35%")
-mapReg=d3Output("mapReg",height ="45%",width = "100%")
+barPlot_famille_etab = d3Output("barPlot_famille_etab",height="100%",width = "45%")
+barPlot_famille_eff31 = d3Output("barPlot_famille_eff31",height="100%",width = "45%")
+barPlot_H_F=d3Output("barPlot_H_F",height="27%",width = "35%")
+mapReg=d3Output("mapReg",height ="30%",width = "95%")
 
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
@@ -210,10 +210,13 @@ server <- function(input,output){
         tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
         r2d3(
             data = tmp_data,
-            script ="www/assets/barplot_circular.js",
+            script ="www/assets/barplot_classic.js",
             options = list(
                 background_color = 'rgb(215, 245, 255)',
-                title="Nombre établissements par forme juridique"
+                title=paste("Nombre établissements par forme juridique (",input$dashboard_year_select_part2,")",sep=""),
+                var_name="Nombre établissements",
+                short_var_name="étab",
+                year=input$dashboard_year_select_part2
             )
         )
     })
@@ -226,15 +229,18 @@ server <- function(input,output){
         tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
         r2d3(
             data = tmp_data,
-            script ="www/assets/barplot_circular.js",
+            script ="www/assets/barplot_classic.js",
             options = list(
                 background_color = 'rgb(215, 245, 255)',
-                title="Effectifs par forme juridique"
+                title=paste("Effectifs par forme juridique (",input$dashboard_year_select_part2,")",sep=""),
+                var_name=paste("Effectifs 31/12/",input$dashboard_year_select_part2,sep=""),
+                short_var_name=paste("eff 31/12/",input$dashboard_year_select_part2,sep=""),
+                year=input$dashboard_year_select_part2
             )
         )
     })
 
-    output$barPlot_famille_nb_emploi <- renderD3({
+    output$barPlot_H_F <- renderD3({
         tmp_data <- TC16_dashboard_bis() %>% 
             filter(tolower(sexe)!="ensemble" & tolower(famille)=="ensemble")%>%
             select(sexe, nb_poste)
@@ -287,7 +293,7 @@ shinyApp(
         pieChart_emploi = pieChart_emploi,
         barPlot_famille_etab=barPlot_famille_etab,
         barPlot_famille_eff31=barPlot_famille_eff31,
-        barPlot_famille_nb_emploi=barPlot_famille_nb_emploi,
+        barPlot_H_F=barPlot_H_F,
         mapReg=mapReg,
         dashboard_select_Input_YEARS_key=dashboard_select_Input_YEARS_key,
         dashboard_select_Input_YEARS_part2=dashboard_select_Input_YEARS_part2
