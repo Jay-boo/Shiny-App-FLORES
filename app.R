@@ -4,6 +4,7 @@ rm(list=ls())
 library(tidyverse)
 library(shiny)
 library(r2d3)
+library(dplyr)
 #source("update.R")
 # Create  missing_imports list + Import the missing_files 
 
@@ -43,11 +44,10 @@ server <- function(input,output){
     # INPUTS
     #   dashboard_year_select_key
     #   dashboard_year_select_part2
-    
     #---------------------------------
     # DASHBOARD
     dataDashBoard_PATH <-reactive({
-        PATH = paste("./outputs/",input$dashboard_year_select_key,"/",sep="")
+        PATH = paste("outputs/",input$dashboard_year_select_key,"/",sep="")
         return(PATH)
 
     })
@@ -115,7 +115,7 @@ server <- function(input,output){
     })
 
     output$nb_etab_txt_GE<- renderText({
-        tmp<-TC13_dashboard() %>%filter(REG == "Grand-Est")%>% select(nb_etab)
+        tmp<-TC13_dashboard() %>% filter(REG == "Grand-Est")%>% select(nb_etab)
         paste(tmp[[1]], " établissements dans la region Grand Est")
     })
 
@@ -146,7 +146,7 @@ server <- function(input,output){
     #   Dashboard part.2
     
     dataDashBoard_PATH_part2 <-reactive({
-        PATH = paste("./outputs/",input$dashboard_year_select_part2,"/",sep="")
+        PATH = paste("outputs/",input$dashboard_year_select_part2,"/",sep="")
         return(PATH)
     })
     TC13_dashboard_bis <-reactive({

@@ -1,4 +1,4 @@
-svg.selectAll('g').remove();
+//svg.selectAll('g').remove();
 var background_c=options.background_color;
 
 var min_dim= Math.min(width,height);
