@@ -8,119 +8,107 @@
 #
 #-------------------------------------------------------------------
 
-#------------------------------------------------
-# Dashboard key numbers
-TC13 <-read.csv("./outputs/2017/TC13.csv",fileEncoding="latin1")
 
 
 
-df<-TC13 %>% filter(typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble" & famille=="Ensemble" & ESS=="ESS")%>% select(REG,nb_etab,rem_brut)
-df<-df%>% filter(REG %in% c("France entière","Grand-Est"))
-df$nb_etab<-as.numeric(df$nb_etab)
-df$rem_brut<-as.numeric(df$rem_brut)
-df$REG<- as.factor(df$REG)
+#--------------------------------------------------------
+# Pie Chart Repartition etablissements / entreprises / eff_EQTP/ eff_31 / Rem brute  par ESS/ Privée Hors ESS /Public
 
-unique(df$REG)
-pie(df$nb_etab)
-pie(df$rem_brut)
+df  <- tables[["outputs/2017/TC13.csv"]]
+# ESS - famille
+# ESS+Hors ESS - Ensemble => Total
+# Hors ESS - Public => Total Public
+#  Hors ESS - Prive Hors ESS=> Total Privé hors ESS
+# ESS + Ensemble
+pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+colnames(pattern)  <-  c("ESS","famille")
+patterns  <- paste(pattern$ESS,pattern$famille,sep="")
 
-
-#----------------------------------------------------------
-#   Dashboard : Scaled part 
-
-
-DEP_GE=c("08","10","51","52","54","55","57","67","68","88")
-TC1 <-read.csv("./outputs/2017/TC1.csv")
-
-#---------
-#   Reformat DEP NUM
-#       01 needed instead of 1
-# +  Retyping famille column
-
-TC1_dep_num=TC1$DEP %>% as.numeric 
-for (i in 1: length(TC1_dep_num)){
-    if (!is.na(TC1_dep_num[i]) & TC1_dep_num[i]<10){
-        TC1$DEP[i]<-paste("0",TC1$DEP[i],sep="")
-    } 
-}
-
-TC1_famille_tmp<-strsplit(TC1$famille,"[.]")
-TC1$famille<-sapply(TC1_famille_tmp,FUN = function(i){
-    if(length(i)>1){
-        return(i[2])
-    }else{
-        return(i[1])
-    }
-})
-
-
-#---------------------
-# Scale : REG
-
-TC13 <-read.csv("./outputs/2017/TC13.csv")
-TC13_famille_tmp<-strsplit(TC13$famille,"[.]")
-TC13$famille<-sapply(TC13_famille_tmp,FUN = function(i){
-    if(length(i)>1){
-        return(i[2])
-    }else{
-        return(i[1])
-    }
-})
-TC13$nb_etab<-TC13$nb_etab%>% as.double
-TC13$eff_31<-TC13$eff_31%>% as.double
-
-
-TC16 <-read.csv("./outputs/2017/TC16.csv")
-TC16_famille_tmp<-strsplit(TC16$famille,"[.]")
-TC16$famille<-sapply(TC16_famille_tmp,FUN = function(i){
-    if(length(i)>1){
-        return(i[2])
-    }else{
-        return(i[1])
-    }
-})
-TC16$sexe %>% unique
-
-barplot_1<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")%>%
-    select(famille,nb_etab)
-
-barplot_2<-TC13%>% filter(typo_B_det=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité")%>%
-    select(famille,eff_31)
-
-barplot_3<-TC16%>% filter(sexe=="Ensemble" & ESS=="ESS" & REG=="Grand-Est" & type_emploi=="Ensemble")%>%
-    select(famille,nb_poste)
+df  <- df %>% filter(REG=="Grand-Est" & typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble")
+df[which( c(df$ESS,df$famille) %in% pattern )]
+df  <- df %>%filter(paste(ESS,famille,sep="") %in% patterns) %>% select(-REG, -ESS, -typo_B,-typo_B_det)
+df[which(df$famille=="Ensemble"),]$famille   <-  "ESS"
 
 
 
+#---------------------------------------------------------
+# Bar plot REg-DEP-EPCI des variables d'interets classique comparer aux restes
 
+#------------------------
+# REG
+df  <- tables[["outputs/2017/TC13.csv"]]
 
+first_part  <- df %>%filter( REG== "Grand-Est" & famille=="Ensemble"  & ESS=="ESS" & typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble") %>% select(-typo_B,-typo_B_det,-famille,-ESS) 
+first_part  <- data.frame(first_part$REG,first_part[,getIndexCol("nb_etab",first_part)])
+colnames(first_part)=c("REG","nb_etab")
 
-#-----------------------------------
-# MAP
+tmp  <-  df %>%filter( REG !="France entière" & famille=="Ensemble"  & ESS=="ESS" & typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble") %>% select(-typo_B,-typo_B_det,-famille,-ESS)
 
-# MAP /secteur d'activité
-data_map=TC1 %>% filter( typo_A_det=="Ensemble" & famille=="Ensemble" & ESS=="ESS" & DEP %in% DEP_GE & typo_A!="Ensemble des secteurs d'activité")%>%
- select(DEP,typo_A,nb_etab) %>% arrange(DEP)
- 
-# Map / forme juridique
-data_map_bis=TC1%>% filter(typo_A_det=="Ensemble" & ESS=="ESS" & DEP %in% DEP_GE & typo_A=="Ensemble des secteurs d'activité")%>%
-    select(DEP,famille,nb_etab)%>% arrange(DEP)
+tmp  <- data.frame(tmp$REG,tmp[,getIndexCol("nb_etab",tmp)])
+colnames(tmp)=c("REG","nb_etab")
 
-
-
-
-# Sending data to r2d3
-tmp_data=jsonlite::toJSON(data_map,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
-
-r2d3(
-    data = tmp_data,
-    script="www/assets/map_dep.js"
-)
-
+second_part  <- df %>%filter( !(REG %in% c("France entière","Grand-Est")) & famille=="Ensemble"  & ESS=="ESS" & typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble") %>% select(-typo_B,-typo_B_det,-famille,-ESS) 
+second_part  <- data.frame(second_part$REG,second_part[,getIndexCol("nb_etab",second_part)])
+colnames(second_part)=c("REG","nb_etab")
+second_part  <- arrange(second_part,desc(second_part[,getIndexCol("nb_etab",second_part)]))
+second_part  <- second_part%>%head(3)
+first_part <-  rbind(c("moyenne",mean(tmp$nb_etab)),first_part)
+rbind(first_part,second_part)
 
 #----------------------
-# Scale Dep
+#	DEP
+
+df  <-  tables[["outputs/2017/TC1.csv"]]
+nom_complet <- "Marne"
+tmp  <-  df %>%filter( DEP !="France entière" & famille=="Ensemble"  & ESS=="ESS" & typo_A=="Ensemble des secteurs d'activité" & typo_A_det=="Ensemble") %>% select(-typo_A,-typo_A_det,-famille,-ESS) %>%filter(as.numeric(DEP) %in% as.numeric(available_DEP$code)) 
+
+tmp  <- data.frame(tmp$DEP,tmp[,getIndexCol("nb_etab",tmp)])
+colnames(tmp)  <- c("DEP","nb_etab")
+
+code  <-available_DEP%>%filter(nom==nom_complet)%>% select(code) 
+code  <- code[[1]]
+first_part  <- df %>% filter(as.numeric(DEP)==as.numeric(code) &  famille=="Ensemble" & ESS=="ESS" & typo_A=="Ensemble des secteurs d'activité" & typo_A_det=="Ensemble")%>% select(-typo_A,-typo_A_det,-famille,-ESS)%>% select(DEP,nb_etab)
+
+first_part  <- data.frame(first_part$DEP,first_part[,getIndexCol("nb_etab",first_part)])
+colnames(first_part)  <- c("DEP","nb_etab")
+first_part[1,1] =nom_complet
+
+second_part  <- df %>% filter (as.numeric(DEP) %in% as.numeric(available_DEP$code) & famille=="Ensemble" & ESS=="ESS" & typo_A=="Ensemble des secteurs d'activité" & typo_A_det=="Ensemble")%>%select(-typo_A,-typo_A_det,-famille,-ESS)
+
+second_part  <- data.frame(second_part$DEP ,second_part[,getIndexCol("nb_etab",second_part)])
+colnames(second_part) <- c("DEP","nb_etab")
+second_part  <- second_part %>% filter(as.numeric(DEP) !=as.numeric(code))
+second_part  <-  arrange(second_part,desc(second_part[,getIndexCol("nb_etab",second_part)]))
+second_part  <- second_part %>%head(3)
+available_DEP_bis <- available_DEP
+available_DEP_bis$code  <- as.numeric(available_DEP_bis$code) 
+colnames(second_part)  <- c("code","nb_etab")
+second_part$code  <- as.numeric(second_part$code)
 
 
-#----------------------
-# Scale EPCI
+
+second_part  <- left_join(second_part,available_DEP_bis)%>% select(nom,nb_etab)
+colnames(second_part) = c("DEP","nb_etab")
+first_part  <- rbind(c("moyenne",mean(tmp$nb_etab)),first_part)
+
+rbind(first_part,second_part)
+
+
+#-------------------------
+#	EPCI
+
+df  <- tables[["outputs/2017/EPCI_T1.csv"]]
+
+nom_compl<- "CC Faucigny-Glières"
+
+tmp  <- df %>% filter(nom_complet %in% available_EPCI$nom_complet & jurid1=="4-ESS" ) %>%
+	select(-EPCI,-jurid1, -dep_epci)
+
+first_part  <-  df%>%filter(nom_complet ==nom_compl & jurid1=="4-ESS")%>% select(nom_complet,nb_etab)
+
+second_part  <- df%>% filter(nom_complet %in% available_EPCI$nom_complet & jurid1=="4-ESS")%>% filter(nom_complet!=nom_compl)%>% select(nom_complet,nb_etab)%>%arrange(desc(nb_etab))%>%head(3)
+
+first_part  <- rbind(c("moyenne",mean(tmp$nb_etab)),first_part)
+
+
+rbind(first_part,second_part)

@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="shared/jquery.js" type="text/javascript"></script>
+  <script src="shared/shiny.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
+  <link rel="stylesheet" href="style-tabs.css">
+  <link rel="stylesheet" href="style-dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  {{headContent()}}
+</head>
+
+
+
+
+<body>
+
+
+  <div class="tabs_headers">
+    <span data-tab-value="#dashboard">DashBoard</span>
+    <span data-tab-value="#tabs2">l'ESS Grand Est</span>
+	<span data-tab-value="#Cartographie">Cartographie</span>
+  </div>
+
+
+  <div class="tab-content-container">
+
+    <div class="tabs-content active" id="dashboard" data-tab-info>
+      
+      
+      <!--DASHBOARD KEY -->
+      <div class="dashboard-key-container">
+      
+      
+        <h2>L'ESS dans la région Grand Est</h2>
+        {{dashboard_select_Input_YEARS_key}}
+        
+        
+        <div class="dashboard-key-trio-container">
+        
+          <div class="dashboard-key" id="etab">
+            <div class="dashboard-key-flex">
+				<span> Nombre Etablissements</span>
+             {{pieChart_etab}}
+            </div>
+          </div>
+
+          <div class="dashboard-key" id="emploi">
+            <div class="dashboard-key-flex">
+				<span> Nombre  effectifs 31/12</span>
+              {{pieChart_emploi}}
+			</div>
+          </div>
+
+          <div class="dashboard-key" id="masse_salariale">
+            <div class="dashboard-key-flex">
+				<span> Nombre remunération brute</span>
+              {{pieChart_rem}}
+            </div>
+          </div>
+
+		  <!--End of the div dahsboard key trio container-->
+		  
+        </div>
+		
+		  <div class="dashboard-key-trio-container-bis">
+			  <div class="dashboard-key" id="eff_EQTP">
+					<div class="dashboard-key-flex">
+						<span> Nombre eff EQTP</span>
+						{{pieChart_effEQTP}}
+					</div>
+				</div>
+
+
+				<div class="dashboard-key" id="entreprises">
+
+					<div class="dashboard-key-flex">
+						<span> Nombre entreprises</span>
+						{{pieChart_ent}}
+					</div>
+				</div>
+
+		  </div>
+
+      </div>
+    
+	  <h4>L'ESS Grand Est face aux autres régions </h4> 
+	  
+	  <div class="dashboard-nb_etab-part">
+		  <div id="dashboard-nb_etab-part-flex">
+
+
+			  {{select_year_nb_etab}}
+			<select  id="select_scale_nb_etab" class="select_box_custom">
+				<option value="REG">Régionale</option>
+				<option value="DEP">Départmentale</option>
+				<option value="EPCI">EPCI</option>
+			</select>
+			<select  id="select_var_nb_etab" class="select_box_custom">
+				<option value="nb_etab">Nombre Etablissements</option>
+				<option value="eff_31">Nombre eff 31/12</option>
+				<option value="eff_EQTP">Nombre Eff EQTP</option>
+				<option value="nb_ent">Nombre  Entreprises</option>
+				<option value="rem_brut">Remunérations brutes</option>
+			</select>
+			
+			{{select_scale_det}}
+
+
+
+		  
+
+		  </div>
+			<div id="flex-container-dashboard-p2">
+			
+				<div id="plot_dashboard_p2">
+					{{plot_dashboard_part_2}}
+				</div>
+			</div>
+
+
+	  </div>
+
+    </div>
+    
+
+    <div class="tabs-content" id="tabs2" data-tab-info>
+        <p>Construct your graph</p>
+
+      <div class="reg-dep-EPCI-container">
+        <select id="dashboard_select_Input_SCALE">
+          <option value="REG">Région</option>
+          <option value="DEP">Départements</option>
+          <option value="EPCI">EPCI</option>
+        </select>
+        <!-- ADDING THE GRAPHS-->
+        <div id="barplot-container-dashboard">
+          <div id="sub-barplot-container-dashboard">
+          </div>
+          <div> Carte Répartition
+			<select id="dashboard_select_VAR" >
+            <option value="REG">du nombre d'établissements</option>
+            <option value="DEP">du nombres d'emplois</option>
+            <option value="EPCI">des rémunération</option>
+          </select>  par Départements</div>
+        </div>
+        
+      </div>
+    </div>
+	<div class="tabs-content" id="Cartographie" data-tab-info>
+        <p>cast</p>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT GLOBAL TABS DASHBOARD-GRAPHS-CAST   --->
+  <script>
+    const tabs = document.querySelectorAll('[data-tab-value]')
+    console.log(tabs)
+    const tabInfos = document.querySelectorAll('[data-tab-info]')
+    console.log(tabInfos)
+    tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            
+              const target = document
+                  .querySelector(tab.dataset.tabValue);
+
+              tabInfos.forEach(tabInfo => {
+                  tabInfo.classList.remove('active')
+                  
+              })
+              target.classList.add('active');
+          })
+    })
+  </script>
+
+  
+
+
+</body>
+
+
+</html>

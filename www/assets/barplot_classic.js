@@ -34,9 +34,9 @@ const xAxis=svg.append("g")
 
 
 
-var size_bar_lab=width*15/500;
+var size_bar_lab=width*(15/500)*0.5;
 var size_nb_etab=width*13/500;
-var ticks_lab_y=margin.left*13/40;
+var ticks_lab_y=0.7*margin.left*13/40;
 
 
 xAxis.selectAll(".tick text")
