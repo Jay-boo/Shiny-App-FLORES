@@ -10,7 +10,10 @@
 
 #------------------------------------------------
 # Dashboard key numbers
-TC13 <-read.csv("./outputs/2017/TC13.csv")
+TC13 <-read.csv("./outputs/2017/TC13.csv",fileEncoding="latin1")
+
+
+
 df<-TC13 %>% filter(typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble" & famille=="Ensemble" & ESS=="ESS")%>% select(REG,nb_etab,rem_brut)
 df<-df%>% filter(REG %in% c("France entière","Grand-Est"))
 df$nb_etab<-as.numeric(df$nb_etab)

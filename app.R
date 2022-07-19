@@ -5,14 +5,38 @@ library(tidyverse)
 library(shiny)
 library(r2d3)
 library(dplyr)
+library(readODS)
+require(skimr)
 #source("update.R")
 # Create  missing_imports list + Import the missing_files 
+
+
+# types <-list(
+# 	"numeric"=c("taille_etab","nb_poste","nb_etab","nb_ent","eff_31","eff_EQTP","rem_brut"),
+# 	"factor"=c("DEP","REG","ESS",
+# 			   "famille","typo_A","typo_A_det",
+# 			   "typo_B","typo_B_det",
+# 			   "typo_C","typo_C_det",
+# 			   "typo_Asso","typo_Asso_det",
+# 			   "typo_Mut","typo_Mut_det",
+# 			   "typo_Coop","typo_Coop_det",
+# 				"sexe",
+# 			   "CSP",
+# 			   "nom_jurid_coop",
+# 			   "nom_jurid_2",
+# 			   "type_emploi",
+# 			   "IDF"
+# 	)
+# )
+
+
+
 
 
 
 #-------------------------------
 # D3 output
-pieChart_etab = d3Output("pieChart_etab",height = "70%")
+pieChart_etab <- d3Output("pieChart_etab",height = "70%")
 pieChart_rem= d3Output("pieChart_rem",height = "70%")
 pieChart_emploi = d3Output("pieChart_emploi",height = "70%")
 barPlot_famille_etab = d3Output("barPlot_famille_etab",height="100%",width = "45%")
@@ -52,7 +76,7 @@ server <- function(input,output){
 
     })
     TC13_dashboard <-reactive({
-         tmp <- read.csv(paste(dataDashBoard_PATH(),"TC13.csv",sep=""))
+         tmp <- read.csv(paste(dataDashBoard_PATH(),"TC13.csv",sep=""),fileEncoding="latin1")
 
          tmp <- tmp %>% filter(typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble" & famille=="Ensemble" & ESS=="ESS")%>% select(REG,nb_etab,rem_brut)
          tmp <- tmp%>% filter(REG %in% c("France entière","Grand-Est"))
@@ -61,7 +85,7 @@ server <- function(input,output){
         return(tmp)
     })
     TC16_dashboard <-reactive({
-        tmp<-read.csv(paste(dataDashBoard_PATH(),"TC16.csv",sep=""))
+        tmp<-read.csv(paste(dataDashBoard_PATH(),"TC16.csv",sep=""),fileEncoding="latin1")
         tmp<-tmp %>% filter(
         tolower(famille)=="ensemble" & 
         tolower(sexe)=="ensemble" & 
@@ -150,7 +174,7 @@ server <- function(input,output){
         return(PATH)
     })
     TC13_dashboard_bis <-reactive({
-        tmp <- read.csv(paste(dataDashBoard_PATH_part2(),"TC13.csv",sep=""))
+        tmp <- read.csv(paste(dataDashBoard_PATH_part2(),"TC13.csv",sep=""),fileEncoding="latin1")
         TC13_famille_tmp<-strsplit(tmp$famille,"[.]")
         tmp$famille<-sapply(TC13_famille_tmp,FUN = function(i){
             if(length(i)>1){
@@ -164,7 +188,7 @@ server <- function(input,output){
         return(tmp)
     })
     TC16_dashboard_bis<-reactive({
-        tmp<-read.csv(paste(dataDashBoard_PATH_part2(),"TC16.csv", sep = ""))
+        tmp<-read.csv(paste(dataDashBoard_PATH_part2(),"TC16.csv", sep = ""),fileEncoding="latin1")
         TC16_famille_tmp<-strsplit(tmp$famille,"[.]")
         tmp$famille<-sapply(TC16_famille_tmp,FUN = function(i){
             if(length(i)>1){
@@ -178,7 +202,7 @@ server <- function(input,output){
     })
 
     TC1_dashboard <-reactive({
-        TC1<-read.csv(paste(dataDashBoard_PATH(),"TC1.csv",sep=""))
+        TC1<-read.csv(paste(dataDashBoard_PATH(),"TC1.csv",sep=""),fileEncoding="latin1")
         TC1_dep_num=TC1$DEP %>% as.numeric 
         for (i in 1: length(TC1_dep_num)){
             if (!is.na(TC1_dep_num[i]) & TC1_dep_num[i]<10){
