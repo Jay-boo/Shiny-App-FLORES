@@ -8,6 +8,7 @@
   <link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
   <link rel="stylesheet" href="style-tabs.css">
   <link rel="stylesheet" href="style-dashboard.css">
+  <link rel="stylesheet" href="style-part2.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   {{headContent()}}
 </head>
@@ -127,28 +128,43 @@
     
 
     <div class="tabs-content" id="tabs2" data-tab-info>
-        <p>Construct your graph</p>
 
-      <div class="reg-dep-EPCI-container">
-        <select id="dashboard_select_Input_SCALE">
-          <option value="REG">Région</option>
-          <option value="DEP">Départements</option>
-          <option value="EPCI">EPCI</option>
-        </select>
-        <!-- ADDING THE GRAPHS-->
-        <div id="barplot-container-dashboard">
-          <div id="sub-barplot-container-dashboard">
-          </div>
-          <div> Carte Répartition
-			<select id="dashboard_select_VAR" >
-            <option value="REG">du nombre d'établissements</option>
-            <option value="DEP">du nombres d'emplois</option>
-            <option value="EPCI">des rémunération</option>
-          </select>  par Départements</div>
-        </div>
-        
-      </div>
-    </div>
+			<div id="tabs-2-container-block">
+
+				<div id="tabs-2-container-flex">
+		
+					<div id="part1-tabs2" class="tabs2-part">
+
+						<span> Poid de l'ESS dans l'économie du grand-Est</span>
+						<div id="select-boxes-tabs2-part1">
+
+
+							{{select_year_tabs2_part1}}
+							<select  id="select_scale_tabs2_part1" class="select_box_custom">
+								<option value="REG">Régionale</option>
+								<option value="DEP">Départmentale</option>
+								<option value="EPCI">EPCI</option>
+							</select>
+
+							{{select_ESS_tabs2_part1}}
+							{{select_scale_det_tabs2_part1}}
+						</div>
+						<div id="plot_tabs2_part1_1">
+							{{plot_tabs2_part1_1}}
+						</div>
+
+					</div>
+
+					<div id="part2-tabs2" class="tabs2-part">
+					</div>
+
+					<div id="part3-tabs2" class="tabs2-part">
+
+					</div>
+				</div>		
+			</div>
+	</div>
+
 	<div class="tabs-content" id="Cartographie" data-tab-info>
         <p>cast</p>
 

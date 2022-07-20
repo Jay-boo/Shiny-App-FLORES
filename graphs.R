@@ -112,3 +112,184 @@ first_part  <- rbind(c("moyenne",mean(tmp$nb_etab)),first_part)
 
 
 rbind(first_part,second_part)
+
+
+
+
+#--------------------------------------
+
+
+# TABS2 - PART 1 : Nombre d'etbs nombre d'emploi par secteurs d'activité selon ESS/ Public / Privé Hors ESS
+
+#-----------------------
+
+
+
+#-------------
+# REG
+
+df  <- tables[["outputs/2018/TC13.csv"]]
+
+
+pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+colnames(pattern)  <-  c("ESS","famille")
+patterns  <- paste(pattern$ESS,pattern$famille,sep="")
+
+
+first_part  <-df%>% filter(REG=="France entière" & typo_B_det=="Ensemble")
+
+first_part  <- first_part %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+first_part[which(first_part$famille=="Ensemble"),]$famille   <-  "ESS"
+for (i in 1:nrow(first_part)){
+	splitted  <- strsplit(first_part$typo_B[i],"[(]")[[1]]
+	first_part$typo_B[i]  <- splitted[1]
+}
+
+
+first_part  <- data.frame(first_part$REG,first_part$famille,first_part$typo_B,first_part[,getIndexCol("nb_etab",first_part)])
+
+colnames(first_part)  <- c("REG","famille","typo_B","nb_etab")
+
+
+first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric())
+for(fam in first_part$famille%>%unique ){
+	tmp  <- first_part%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	first_part_bis  <- rbind(first_part_bis,tmp)
+}
+first_part_bis  <- first_part_bis %>% filter(typo_B!="Ensemble des secteurs d'activité")
+
+df  <- df %>% filter(REG=="Grand-Est" &  typo_B_det=="Ensemble" )
+df  <- df %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+df[which(df$famille=="Ensemble"),]$famille   <-  "ESS"
+df  <-df%>% select(-typo_B_det,-ESS)
+for (i in 1:nrow(df)){
+	splitted  <- strsplit(df$typo_B[i],"[(]")[[1]]
+	df$typo_B[i]  <- splitted[1]
+}
+
+
+df  <- data.frame(df$REG,df$famille,df$typo_B,df[,getIndexCol("nb_etab",df)])
+colnames(df)  <- c("REG","famille","typo_B","nb_etab")
+new_dat  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric())
+for(fam in df$famille%>%unique ){
+	tmp  <- df%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	new_dat  <- rbind(new_dat,tmp)
+}
+
+new_dat  <-new_dat %>% filter(typo_B !="Ensemble des secteurs d'activité")
+rbind(new_dat,first_part)
+#------------------
+# DEP
+
+df  <- tables[["outputs/2017/TC1.csv"]]
+
+nom_DEP  <- "Marne"
+code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
+code  <- code[[1]]
+pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+colnames(pattern)  <-  c("ESS","famille")
+patterns  <- paste(pattern$ESS,pattern$famille,sep="")
+
+first_part  <-df%>% filter(DEP=="France entière" & typo_A_det=="Ensemble")
+first_part  <- first_part %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+first_part[which(first_part$famille=="Ensemble"),]$famille   <-  "ESS"
+for (i in 1:nrow(first_part)){
+	splitted  <- strsplit(first_part$typo_A[i],"[(]")[[1]]
+	first_part$typo_A[i]  <- splitted[1]
+}
+
+
+first_part  <- data.frame(first_part$DEP,first_part$famille,first_part$typo_A,first_part[,getIndexCol("nb_etab",first_part)])
+
+colnames(first_part)  <- c("DEP","famille","typo_A","nb_etab")
+
+
+first_part_bis  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric())
+for(fam in first_part$famille%>%unique ){
+	tmp  <- first_part%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	first_part_bis  <- rbind(first_part_bis,tmp)
+}
+first_part_bis <-  first_part_bis %>% filter(typo_A !="Ensemble des secteurs d'activité")
+
+df  <- df %>% filter(as.numeric(DEP)==as.numeric(code) &  typo_A_det=="Ensemble")
+df  <- df %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+df[which(df$famille=="Ensemble"),]$famille   <-  "ESS"
+df  <-df%>% select(-typo_A_det,-ESS)
+for (i in 1:nrow(df)){
+	splitted  <- strsplit(df$typo_A[i],"[(]")[[1]]
+	df$typo_A[i]  <- splitted[1]
+}
+df$DEP =rep(nom_DEP,nrow(df))
+df  <- data.frame(df$DEP,df$famille,df$typo_A,df[,getIndexCol("nb_etab",df)])
+colnames(df)  <- c("DEP","famille","typo_A","nb_etab")
+new_dat  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric())
+for(fam in df$famille%>%unique ){
+	tmp  <- df%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	new_dat  <- rbind(new_dat,tmp)
+}
+
+new_dat  <-new_dat %>% filter(typo_A !="Ensemble des secteurs d'activité")
+
+rbind(new_dat,first_part_bis)$famille %>%unique
+#-----------------
+# EPCI 
+
+
+df  <- tables[["outputs/2017/EPCI_T2.csv"]]
+
+nom_EPCI  <- "CC Faucigny-Glières"
+df  <- df %>%filter(nom_complet==nom_EPCI )
+for (i in 1:nrow(df)){
+	splitted  <- strsplit(df$jurid2[i],"TOTAL-")[[1]]
+	print(splitted)
+	df$jurid2[i]  <- splitted[2]
+}
+df$jurid2 %>%unique
+df  <-df %>% filter(jurid2 != "ASSOCIATIONS")
+# Seulement 2 modalité : TOTAL-ESS / TOTAL HORS ESS
+df  <- df %>% select(-EPCI)
+
+for (i in 1:nrow(df)){
+	splitted  <- strsplit(df$typo1[i],"-")[[1]]
+	print(splitted)
+	if(splitted%>% length >1){
+
+		df$typo1[i]  <- splitted[2]
+	}else{
+
+		df$typo1[i]  <- splitted[1]
+	}
+}
+df[which(df$typo1=="NON"),]$typo1  <- "NON CLASSES"
+
+
+df  <- data.frame(df$nom_complet,df$jurid2,df$typo1,df[,getIndexCol("nb_etab",df)])
+colnames(df)  <- c("EPCI","famille","typo1","nb_etab")
+new_dat  <-  data.frame("EPCI"=character(),"famille"=character(),"typo1"=character(),"var"=numeric())
+
+for(fam in df$famille%>%unique ){
+	tmp  <- df%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$typo1=="TOUS SECTEURS"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	new_dat  <- rbind(new_dat,tmp)
+}
+new_dat  <- new_dat%>%filter(typo1!="TOUS SECTEURS")
+new_dat$famille %>%unique
