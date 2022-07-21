@@ -34,7 +34,7 @@
       <div class="dashboard-key-container">
       
       
-        <h2>L'ESS dans la région Grand Est</h2>
+        <h2>Horizon de L'ESS au sein la région Grand Est</h2>
         {{dashboard_select_Input_YEARS_key}}
         
         
@@ -42,21 +42,21 @@
         
           <div class="dashboard-key" id="etab">
             <div class="dashboard-key-flex">
-				<span> Nombre Etablissements</span>
+				<span> Les établissements de Grand Est</span>
              {{pieChart_etab}}
             </div>
           </div>
 
           <div class="dashboard-key" id="emploi">
             <div class="dashboard-key-flex">
-				<span> Nombre  effectifs 31/12</span>
+				<span>  Les effectifs au 31/12 de Grand Est</span>
               {{pieChart_emploi}}
 			</div>
           </div>
 
           <div class="dashboard-key" id="masse_salariale">
             <div class="dashboard-key-flex">
-				<span> Nombre remunération brute</span>
+				<span> Les  Rémunérations brutes de Grand Est</span>
               {{pieChart_rem}}
             </div>
           </div>
@@ -68,7 +68,7 @@
 		  <div class="dashboard-key-trio-container-bis">
 			  <div class="dashboard-key" id="eff_EQTP">
 					<div class="dashboard-key-flex">
-						<span> Nombre eff EQTP</span>
+						<span> Les effectifs équivalents temps plein de Grand Est</span>
 						{{pieChart_effEQTP}}
 					</div>
 				</div>
@@ -77,7 +77,7 @@
 				<div class="dashboard-key" id="entreprises">
 
 					<div class="dashboard-key-flex">
-						<span> Nombre entreprises</span>
+						<span> Les entreprises de Grand Est</span>
 						{{pieChart_ent}}
 					</div>
 				</div>
@@ -88,17 +88,17 @@
     
 	  <h4>L'ESS Grand Est face aux autres régions </h4> 
 	  
-	  <div class="dashboard-nb_etab-part">
-		  <div id="dashboard-nb_etab-part-flex">
+					<div  class="dashboard-nb_etab-part">
+						<div id="dashboard-nb_etab-part-flex"></div>
+					<div id="select-boxes-tabs2-head">
 
-
-			  {{select_year_nb_etab}}
-			<select  id="select_scale_nb_etab" class="select_box_custom">
+						{{select_year_tabs2_head}}
+			<select  id="select_scale_tabs2_head" class="select_box_custom">
 				<option value="REG">Régionale</option>
-				<option value="DEP">Départmentale</option>
+				<option value="DEP">Départementale</option>
 				<option value="EPCI">EPCI</option>
 			</select>
-			<select  id="select_var_nb_etab" class="select_box_custom">
+			<select  id="select_var_tabs2_head" class="select_box_custom">
 				<option value="nb_etab">Nombre Etablissements</option>
 				<option value="eff_31">Nombre eff 31/12</option>
 				<option value="eff_EQTP">Nombre Eff EQTP</option>
@@ -106,39 +106,40 @@
 				<option value="rem_brut">Remunérations brutes</option>
 			</select>
 			
-			{{select_scale_det}}
+			{{select_scale_det_tabs2_head}}
+
+
+					</div>
+					<div id="flex-container-dashboard-p2">
+
 
 
 
 		  
 
-		  </div>
-			<div id="flex-container-dashboard-p2">
-			
-				<div id="plot_dashboard_p2">
-					{{plot_dashboard_part_2}}
-				</div>
-			{{export_csv_dashboard_part2}}
+					<div id="plot_tabs2_head" class="shiny-plot-output" style="width:90%;height:100%"></div>
 			</div>
-
-
+			{{export_csv_dashboard_part2}}
 
 	  </div>
 
 			<div id="tabs-2-container-block">
 
 				<div id="tabs-2-container-flex">
+
+
+
 		
 					<div id="part1-tabs2" class="tabs2-part">
 
-						<span> Poid de l'ESS dans l'économie du grand-Est</span>
+						<span> Poid de l'ESS dans l'économie du Grand Est</span>
 						<div id="select-boxes-tabs2-part1">
 
 
 							{{select_year_tabs2_part1}}
 							<select  id="select_scale_tabs2_part1" class="select_box_custom">
 								<option value="REG">Régionale</option>
-								<option value="DEP">Départmentale</option>
+								<option value="DEP">Départementale</option>
 								<option value="EPCI">EPCI</option>
 							</select>
 			<select  id="select_var_tabs2_part1" class="select_box_custom">
@@ -165,7 +166,7 @@
 					</div>
 
 					<div id="part2-tabs2" class="tabs2-part">
-						<span> Les familles juridiques en région Grand-Est</span>
+						<span> Les familles juridiques en région Grand Est</span>
 						<div id="select-boxes-tabs2-part2">
 
 
@@ -200,7 +201,7 @@
 
 					<div id="part3-tabs2" class="tabs2-part">
 
-						<span> Taille des etablissement de l'ESS en région Grand-Est</span>
+						<span> Taille des établissements de l'ESS en région Grand Est</span>
 						<div id="select-boxes-tabs2-part3">
 
 

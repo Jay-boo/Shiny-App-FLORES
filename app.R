@@ -20,6 +20,23 @@ f1 <- function(num) {
 getIndexCol  <- function(var_lab,data){
 	return(which(colnames(data)==var_lab))
 }
+var_to_title  <- list(
+					  "nb_etab"="Nombre d'établissements",
+					  "eff_31"="Les effectifs aux 31/12/",
+					  "eff_EQTP"="Les effectifs equivalents temps plein",
+					  "nb_ent"="Nombre d'entreprises",
+					  "rem_brut"="Les rémunérations brutes"
+)
+
+var_to_short  <-  list(
+					  "nb_etab"="etb",
+					  "eff_31"="eff",
+					  "eff_EQTP"="eff EQTP",
+					  "nb_ent"="ent",
+					  "rem_brut"="€ rem"
+)
+
+
 
 types <- list(
 			  "numeric"=c("nb_etab","nb_ent","eff_31","eff_EQTP","rem_brut","nb_poste","non_annexe"),
@@ -138,7 +155,6 @@ pieChart_rem= d3Output("pieChart_rem",height = "70%")
 pieChart_emploi = d3Output("pieChart_emploi",height = "70%")
 pieChart_effEQTP= d3Output("pieChart_effEQTP",height = "70%")
 pieChart_ent=d3Output("pieChart_ent",height = "70%")
-plot_dashboard_part_2 =d3Output("plot_dashboard_part_2",height = "90%")
 plot_tabs2_part1_1 =d3Output("plot_tabs2_part1_1",height = "100%",width="90%")
 plot_tabs2_part1_2 =d3Output("plot_tabs2_part1_2",height = "100%",width="90%")
 plot_tabs2_part2_1 =d3Output("plot_tabs2_part2_1",height = "100%",width="90%")
@@ -154,7 +170,7 @@ for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
 
 dashboard_select_Input_YEARS_key=HTML(paste('<select id="dashboard_year_select_key">',selectbox_HTML,'</select>',sep=""))
 
-select_year_nb_etab=HTML(paste('<select id="select_year_nb_etab" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
+select_year_tabs2_head=HTML(paste('<select id="select_year_tabs2_head" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
 
 
 
@@ -281,32 +297,33 @@ server <- function(input,output,session){
 	# Utilisation de TC13.csv pour REG , TC1.csv pour DEP et EPCI_T1 pour les EPCI:
 	#On aura un barplot particulier avec des dodge position 
 
-	data_dashboard_part2  <- reactive({
-		nameTable = ""
 
-		if(input$select_scale_nb_etab=="REG"){
+
+
+
+
+	data_tabs2_head	  <- reactive({
+
+		nameTable = ""
+		year  <- input$select_year_tabs2_head
+		scale  <- input$select_scale_tabs2_head
+		varLab  <- input$select_var_tabs2_head
+
+		if(scale=="REG"){
 			nameTable="TC13.csv"
-		}else if(input$select_scale_nb_etab=="DEP"){
+		}else if(scale=="DEP"){
 			nameTable="TC1.csv"
 		}else{
 			nameTable="EPCI_T1.csv"
 		}
 
-        PATH = paste("outputs/",input$select_year_nb_etab,"/",sep="")
-		nameTable  <- paste(PATH,nameTable,sep="")
-		return (tables[[nameTable]])
-	})
+        PATH = paste("outputs/",year,"/",nameTable,sep="")
+		print(PATH)
+		
+		df  <- tables[[PATH]]
 
-
-
-
-
-
-	plot_dashboard_part_2  <- reactive({
-		df  <- data_dashboard_part2()
-		varLab  <- input$select_var_nb_etab
-
-		if(input$select_scale_nb_etab=="REG"){
+		print(scale)
+		if(scale=="REG"){
 			
 			first_part  <- df %>%filter( REG== "Grand-Est" & famille=="Ensemble"  & ESS=="ESS" & typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble") %>% select(-typo_B,-typo_B_det,-famille,-ESS)
 			
@@ -327,21 +344,21 @@ server <- function(input,output,session){
 			first_part <-  rbind(c("moyenne",round(mean(tmp[,getIndexCol(varLab,tmp)])),3),first_part)
 			data  <- rbind(first_part,second_part)
 
-		}else if(input$select_scale_nb_etab=="DEP"){
+		}else if(scale=="DEP"){
 
 			tmp  <-  df %>%filter( DEP !="France entière" & famille=="Ensemble"  & ESS=="ESS" & typo_A=="Ensemble des secteurs d'activité" & typo_A_det=="Ensemble") %>% select(-typo_A,-typo_A_det,-famille,-ESS) %>%filter(as.numeric(DEP) %in% as.numeric(available_DEP$code)) 
 
 			tmp  <- data.frame(tmp$DEP,tmp[,getIndexCol(varLab,tmp)])
 			colnames(tmp)  <- c("DEP",varLab)
 
-			code  <-available_DEP%>%filter(nom==input$select_scale_det)%>% select(code) 
+			code  <-available_DEP%>%filter(nom==input$select_scale_det_tabs2_head)%>% select(code) 
 			code  <- code[[1]]
 			first_part  <- df %>% filter(as.numeric(DEP)==as.numeric(code) &  famille=="Ensemble" & ESS=="ESS" & typo_A=="Ensemble des secteurs d'activité" & typo_A_det=="Ensemble")%>% select(-typo_A,-typo_A_det,-famille,-ESS)
 
 			first_part  <- data.frame(first_part$DEP,first_part[,getIndexCol(varLab,first_part)])
 			colnames(first_part)  <- c("DEP",varLab)
 
-			first_part[1,1] =input$select_scale_det
+			first_part[1,1] =input$select_scale_det_tabs2_head
 			second_part  <- df %>% filter (as.numeric(DEP) %in% as.numeric(available_DEP$code) & famille=="Ensemble" & ESS=="ESS" & typo_A=="Ensemble des secteurs d'activité" & typo_A_det=="Ensemble")%>%select(-typo_A,-typo_A_det,-famille,-ESS)
 
 			second_part  <- data.frame(second_part$DEP ,second_part[,getIndexCol("nb_etab",second_part)])
@@ -370,12 +387,12 @@ server <- function(input,output,session){
 				select(-EPCI,-jurid1, -dep_epci)
 
 
-			first_part  <-  df%>%filter(nom_complet ==input$select_scale_det & jurid1=="4-ESS")
+			first_part  <-  df%>%filter(nom_complet ==input$select_scale_det_tabs2_head & jurid1=="4-ESS")
 			first_part  <- data.frame(first_part$nom_complet,first_part[,getIndexCol(varLab,first_part)])
 			colnames(first_part)=c("nom_complet",varLab)
 
 
-			second_part  <- df%>% filter(nom_complet %in% available_EPCI$nom_complet & jurid1=="4-ESS")%>% filter(nom_complet!=input$select_scale_det)
+			second_part  <- df%>% filter(nom_complet %in% available_EPCI$nom_complet & jurid1=="4-ESS")%>% filter(nom_complet!=input$select_scale_det_tabs2_head)
 
 			second_part  <- data.frame(second_part$nom_complet,second_part[,getIndexCol(varLab,second_part)])
 			colnames(second_part)  <- c("nom_complet",varLab)
@@ -386,28 +403,26 @@ server <- function(input,output,session){
 		}
 
 
-		colnames(data)  <- c("country","value")
 		return(data)
 
 
 	})
 
-	output$plot_dashboard_part_2  <- renderD3({
-		dt  <- plot_dashboard_part_2()
-		dt  <- jsonlite::toJSON(dt,dataframe = "rows",auto_unbox = FALSE,rownames=FALSE)
-		r2d3(
-			 data=dt,
-			 script="www/assets/barplot_classic.js",
-			 options=list(
-						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Nombre Etablissement",input$select_scale_det,sep=" "),
-						  var_name="Nombre établissements",
-						  short_var_name="étab",
-						  year=input$select_year_nb_etab
-
-			 )
-		)
+	output$plot_tabs2_head  <- renderPlot({
+		df  <- data_tabs2_head()
+		colnames(df)  <-  c("country","value")
+		print(df)
+		varLab  <- input$select_var_tabs2_head
 		
+		g  <- ggplot(df,aes(country,value,fill=country))
+		g  <- g+ geom_col()+
+			xlab(" Régions/Moyenne")+
+			ylab(var_to_short[[varLab]])+
+			ggtitle(paste(var_to_title[[varLab]],"en",input$select_scale_det_tabs2_head,"(",input$select_year,")",sep=" "))+
+			guides(fill="none")+
+			scale_fill_hue()+ theme (axis.text.x=element_text(face="bold",size=10,angle=90))
+
+		return(g)
 	})
 
 
@@ -417,15 +432,15 @@ server <- function(input,output,session){
 
 
 	observe({
-		if(input$select_scale_nb_etab=="REG"){
+		if(input$select_scale_tabs2_head=="REG"){
 			choice=c(overAll_filter_REG)
-		}else if(input$select_scale_nb_etab=="DEP"){
+		}else if(input$select_scale_tabs2_head=="DEP"){
 			choice=available_DEP$nom
 
 		}else{
 			choice=available_EPCI$nom_complet
 		}
-		updateSelectInput(session,"select_scale_det",choices=choice)
+		updateSelectInput(session,"select_scale_det_tabs2_head",choices=choice)
 	})
 
 
@@ -436,11 +451,11 @@ server <- function(input,output,session){
 
 	output$export_csv_dashboard_part2  <- downloadHandler(
 													 filename=function(){
-														 paste(select_var_nb_etab,input$select_year_nb_etab,"par_secteurs_scale=",input$select_scale_det,".csv",sep="")
+														 paste(input$select_var_tabs2_head,input$select_year_tabs2_head,"par_secteurs_scale=",input$select_scale_det_tabs2_head,".csv",sep="")
 
 													 },
 													 content = function(file){
-														 write.csv(plot_dashboard_part_2(),file,row.names= FALSE,fileEncoding="latin1")
+														 write.csv(data_tabs2_head(),file,row.names= FALSE,fileEncoding="latin1")
 													 }
 	)
 
@@ -645,7 +660,7 @@ server <- function(input,output,session){
 
 
 	output$plot_tabs2_part1_1  <- renderD3({
-		varLab  <- input$select_scale_tabs2_part1
+		varLab  <- input$select_var_tabs2_part1
 
 		df  <- data_tabs2_part1()
 		if( input$select_scale_tabs2_part1=="REG"){
@@ -675,9 +690,9 @@ server <- function(input,output,session){
 			 script="www/assets/barplot_classic.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Nombre Etablissement",input$select_year_tabs2_part1,sep=" "),
-						  var_name="Nombre établissements",
-						  short_var_name="étab",
+						  title=paste(var_to_title[[varLab]],"par secteur d'activité","en",input$select_scale_det_tabs2_part1,"(",input$select_year_tabs2_part1,")",sep=" "),
+						  var_name=var_to_short[[varLab]],
+						  short_var_name=var_to_short[[varLab]],
 						  year=input$select_year_tabs2_part1
 
 			 )
@@ -768,9 +783,9 @@ server <- function(input,output,session){
 			 script="www/assets/barplot_classic.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Nombre Etablissement",input$select_year_tabs2_part1,sep=" "),
-						  var_name="Nombre établissements",
-						  short_var_name="étab",
+						  title=paste(var_to_title[[varLab]],"par secteur d'activité","en France",input$select_scale_det_tabs2_part1,"(",input$select_year_tabs2_part1,")",sep=" "),
+						  var_name=var_to_short[[varLab]],
+						  short_var_name=var_to_short[[varLab]],
 						  year=input$select_year_tabs2_part1
 
 			 )
@@ -1531,9 +1546,8 @@ shinyApp(
         dashboard_select_Input_YEARS_key=dashboard_select_Input_YEARS_key,
 		#---------------------------------
 		# DAHSBOARD PART 2
-		select_year_nb_etab=select_year_nb_etab,
-		select_scale_det=select_scale_det_REG,
-		plot_dashboard_part_2=plot_dashboard_part_2,
+		select_year_tabs2_head=select_year_tabs2_head,
+		select_scale_det_tabs2_head=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_head"),
 		export_csv_dashboard_part2 = downloadButton("export_csv_dashboard_part2","Export data"),
 		#----------------------------------
 		# TABS2 - PART 1
