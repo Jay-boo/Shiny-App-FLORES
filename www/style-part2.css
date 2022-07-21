@@ -4,7 +4,7 @@
 	display: block;
 	width: 95%;
 	height: 3000px;
-	background-color: blueviolet;
+	background-color:  rgb(22, 112, 151);
 	margin-top: 5px;
 	margin-bottom: 5px;
 	justify-content: center;
@@ -59,7 +59,7 @@
 	width: 100%;
 	justify-content: flex-start;
 	align-items: center;
-	background-color: whitesmoke;
+	background-color: rgb(215, 245, 255);
 	border-radius: 5px;
 	flex-direction: column;
 
@@ -115,4 +115,21 @@
 	align-items: center;
 	width: 90%;
 	height: 48%;
+}
+#export_csv_tab2_part1{
+	font-size: 15px;
+	font-weight: bold;
+}
+#export_csv_tab2_part3{
+	font-size: 15px;
+	font-weight: bold;
+}
+#export_csv_tab2_part2{
+	font-size: 15px;
+	font-weight: bold;
+}
+
+#export_csv_dashboard_part2{
+	font-size: 15px;
+	font-weight: bold;
 }

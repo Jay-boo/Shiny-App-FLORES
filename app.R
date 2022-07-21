@@ -427,6 +427,36 @@ server <- function(input,output,session){
 		}
 		updateSelectInput(session,"select_scale_det",choices=choice)
 	})
+
+
+
+
+
+
+
+	output$export_csv_dashboard_part2  <- downloadHandler(
+													 filename=function(){
+														 paste(select_var_nb_etab,input$select_year_nb_etab,"par_secteurs_scale=",input$select_scale_det,".csv",sep="")
+
+													 },
+													 content = function(file){
+														 write.csv(plot_dashboard_part_2(),file,row.names= FALSE,fileEncoding="latin1")
+													 }
+	)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	#----------------------------------------
 	# TAB2 - PART 1
 	#----------------------------------------
@@ -776,8 +806,19 @@ server <- function(input,output,session){
 		}
 		updateSelectInput(session,"select_scale_det_tabs2_part1",choices=choice)
 	})
+
+	
 	
 
+	output$export_csv_tab2_part1  <- downloadHandler(
+													 filename=function(){
+														 paste("Repartition","nb_etab",input$select_year_tabs2_part2,"par_secteurs_scale=",input$select_scale_det_tabs2_part2,".csv",sep="")
+
+													 },
+													 content = function(file){
+														 write.csv(data_tabs2_part2(),file,row.names= FALSE,fileEncoding="latin1")
+													 }
+	)
 
 
 
@@ -1159,6 +1200,15 @@ server <- function(input,output,session){
 
 
 
+	output$export_csv_tab2_part2  <- downloadHandler(
+													 filename=function(){
+														 paste("Repartition","nb_etab",input$select_year_tabs2_part2,"par_famille_juridique_scale=",input$select_scale_det_tabs2_part2,".csv",sep="")
+
+													 },
+													 content = function(file){
+														 write.csv(data_tabs2_part2(),file,row.names= FALSE,fileEncoding="latin1")
+													 }
+	)
 
 
 
@@ -1437,6 +1487,18 @@ server <- function(input,output,session){
 		updateSelectInput(session,"select_scale_det_tabs2_part3",choices=choice)
 	})
 
+
+
+	output$export_csv_tab2_part3  <- downloadHandler(
+													 filename=function(){
+														 paste("Repartition","nb_etab",input$select_year_tabs2_part3,"par_taille_etablissements_scale=",input$select_scale_det_tabs2_part3,".csv",sep="")
+
+													 },
+													 content = function(file){
+														 write.csv(data_tabs2_part3(),file,row.names= FALSE,fileEncoding="latin1")
+													 }
+	)
+
 	
 
 
@@ -1459,6 +1521,7 @@ shinyApp(
 		select_year_nb_etab=select_year_nb_etab,
 		select_scale_det=select_scale_det_REG,
 		plot_dashboard_part_2=plot_dashboard_part_2,
+		export_csv_dashboard_part2 = downloadButton("export_csv_dashboard_part2","Export data"),
 		#----------------------------------
 		# TABS2 - PART 1
 		select_year_tabs2_part1=select_year_tabs2_part1,
@@ -1466,12 +1529,14 @@ shinyApp(
 		select_scale_det_tabs2_part1=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part1"),
 		plot_tabs2_part1_1=plot_tabs2_part1_1,
 		plot_tabs2_part1_2 =plot_tabs2_part1_2,
+		export_csv_tab2_part1=downloadButton("export_csv_tab2_part1","Export data"),
 		#----------------------------
 		#TABS2 - PART 2	
 		select_year_tabs2_part2=select_year_tabs2_part2,
 		select_ESS_tabs2_part2=construct_select_box(c("ESS","ESS + Hors ESS"),"select_ESS_tabs2_part2"),
 		select_scale_det_tabs2_part2=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part2"),
 		plot_tabs2_part2_1= plot_tabs2_part2_1,
+		export_csv_tab2_part2=downloadButton("export_csv_tab2_part2","Export data"),
 		plot_tabs2_part2_2 = plot_tabs2_part2_2,
 		#--------------------------------
 		# TABS2 - PART3
@@ -1480,6 +1545,7 @@ shinyApp(
 		select_year_tabs2_part3=select_year_tabs2_part3,
 		select_scale_det_tabs2_part3=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part3"),
 		plot_tabs2_part3_1=plot_tabs2_part3_1,
+		export_csv_tab2_part3=downloadButton("export_csv_tab2_part3","Export data"),
 		plot_tabs2_part3_2=plot_tabs2_part3_2
         ),
     server = server

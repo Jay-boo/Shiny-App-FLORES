@@ -28,7 +28,11 @@ body {
     font-size: 20px;
     color: rgb(5, 5, 5);
     display: flex;
+	height: 50px;
     margin: 0;
+}
+.tabs_headers img{
+	height: 90%;
 }
   
 .tabs_headers span {
