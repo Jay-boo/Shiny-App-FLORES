@@ -140,6 +140,8 @@ pieChart_effEQTP= d3Output("pieChart_effEQTP",height = "70%")
 pieChart_ent=d3Output("pieChart_ent",height = "70%")
 plot_dashboard_part_2 =d3Output("plot_dashboard_part_2",height = "90%")
 plot_tabs2_part1_1 =d3Output("plot_tabs2_part1_1",height = "100%",width="90%")
+plot_tabs2_part1_2 =d3Output("plot_tabs2_part1_2",height = "100%",width="90%")
+plot_tabs2_part2_1 =d3Output("plot_tabs2_part2_1",height = "100%",width="90%")
 
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
@@ -151,8 +153,10 @@ dashboard_select_Input_YEARS_key=HTML(paste('<select id="dashboard_year_select_k
 select_year_nb_etab=HTML(paste('<select id="select_year_nb_etab" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
 
 
+
 select_year_tabs2_part1=HTML(paste('<select id="select_year_tabs2_part1" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
 
+select_year_tabs2_part2=HTML(paste('<select id="select_year_tabs2_part2" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
 select_scale_det_REG= construct_select_box(c(overAll_filter_REG),"select_scale_det")
 DEP_GE=c("08","10","51","52","54","55","57","67","68","88")
 
@@ -423,7 +427,6 @@ server <- function(input,output,session){
 	data_tabs2_part1  <- reactive({
 		year  <- input$select_year_tabs2_part1
 		scale  <- input$select_scale_tabs2_part1
-		print(scale)
 		id_table  <- ""
 		if(scale=="REG"){
 			id_table  <- "TC13.csv"
@@ -489,7 +492,7 @@ server <- function(input,output,session){
 			}
 
 			new_dat  <-new_dat %>% filter(typo_B !="Ensemble des secteurs d'activité")
-			data <- rbind(new_dat,first_part)
+			data <- rbind(new_dat,first_part_bis)
 	
 		}else if(scale=="DEP"){
 
@@ -605,8 +608,7 @@ server <- function(input,output,session){
 	output$plot_tabs2_part1_1  <- renderD3({
 
 		df  <- data_tabs2_part1()
-		print("hello there")
-		if( input$select_scale_tabs2_part1!="REG"){
+		if( input$select_scale_tabs2_part1=="REG"){
 			df  <- df %>% filter(REG==input$select_scale_det_tabs2_part1 &  famille==input$select_ESS_tabs2_part1) %>%select(-REG,-famille)
 		}else if(input$select_scale_tabs2_part1=="DEP"){
 			df  <- df %>% filter(DEP==input$select_scale_det_tabs2_part1 & famille==input$select_ESS_tabs2_part1)%>% select(-DEP,-famille)
@@ -617,11 +619,10 @@ server <- function(input,output,session){
 			df  <-  df%>% filter(famille==input$select_ESS_tabs2_part1)%>% select(-EPCI,-famille)
 
 		}
-		print(df)
 
+		colnames(df) <- c("country","value")
 		
-		df  <- jsonlite::toJSON(dd,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
-		print("plot done")
+		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 		r2d3(
 			 data=df,
 
@@ -637,11 +638,104 @@ server <- function(input,output,session){
 		)
 		
 	})
-	observe({
-		if(input$select_scale_tabs2_part1!="EPCI"){
-			choice=c("ESS","Privée Hors ESS","Public")
+
+
+
+
+
+
+
+
+
+
+
+	output$plot_tabs2_part1_2  <- renderD3({
+
+		df  <- data_tabs2_part1()
+		if( input$select_scale_tabs2_part1=="REG"){
+			df  <- df %>% filter(REG=="France entière" &  famille==input$select_ESS_tabs2_part1) %>%select(-REG,-famille)
+		}else if(input$select_scale_tabs2_part1=="DEP"){
+			df  <- df %>% filter(DEP=="France entière" & famille==input$select_ESS_tabs2_part1)%>% select(-DEP,-famille)
+
+
 		}else{
+			# HORS ESS et ESS
+			PATH  <- paste("outputs/",input$select_year_tabs2_part1,"/TC13.csv",sep="")
+			df  <- tables[[PATH]]
+
+
+			pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+			colnames(pattern)  <-  c("ESS","famille")
+			patterns  <- paste(pattern$ESS,pattern$famille,sep="")
+
+
+			first_part  <-df%>% filter(REG=="France entière" & typo_B_det=="Ensemble")
+
+			first_part  <- first_part %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+			first_part[which(first_part$famille=="Ensemble"),]$famille   <-  "ESS"
+			for (i in 1:nrow(first_part)){
+				splitted  <- strsplit(first_part$typo_B[i],"[(]")[[1]]
+				first_part$typo_B[i]  <- splitted[1]
+			}
+
+
+			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$typo_B,first_part[,getIndexCol("nb_etab",first_part)])
+
+			colnames(first_part)  <- c("REG","famille","typo_B","nb_etab")
+
+
+			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric())
+			for(fam in first_part$famille%>%unique ){
+				tmp  <- first_part%>% filter(famille==fam)
+				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				first_part_bis  <- rbind(first_part_bis,tmp)
+			}
+			ESS_filtre  <- ""
+			if(input$select_ESS_tabs2_part1=="ESS"){
+				ESS_filtre  <- "ESS"
+			}else{
+				ESS_filtre  <- "Public"
+			}
+			
+			first_part_bis  <- first_part_bis %>% filter(typo_B!="Ensemble des secteurs d'activité")
+			first_part_bis  <- 	first_part_bis %>% filter(famille==ESS_filtre)
+			df  <- data.frame(first_part_bis$typo_B,first_part_bis[,getIndexCol("nb_etab",first_part_bis)])
+
+		}
+
+		colnames(df) <- c("country","value")
+		
+		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+		r2d3(
+			 data=df,
+
+			 script="www/assets/barplot_classic.js",
+			 options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Nombre Etablissement",input$select_year_tabs2_part1,sep=" "),
+						  var_name="Nombre établissements",
+						  short_var_name="étab",
+						  year=input$select_year_nb_etab
+
+			 )
+		)
+		
+	})
+
+
+
+
+	observe({
+		if(input$select_scale_tabs2_part1=="REG"){
+			choice=c("ESS","Privé Hors ESS","Public")
+		}else if(input$select_scale_tabs2_part1=="EPCI"){
 			choice=c("ESS","HORS ESS")
+		}
+		else{
+			choice=c("ESS","Public","Privé Hors ESS")
 		}
 		updateSelectInput(session,"select_ESS_tabs2_part1",choices=choice)
 	})
@@ -662,6 +756,7 @@ server <- function(input,output,session){
 		}
 		updateSelectInput(session,"select_scale_det_tabs2_part1",choices=choice)
 	})
+	
 
 
 
@@ -669,26 +764,303 @@ server <- function(input,output,session){
 
 
 
-    #---------------------------------
-    #   Dashboard part.2
-    # output$barPlot_famille_etab <- renderD3({
-    #     tmp_data <- TC13_dashboard_bis() %>% select(famille, nb_etab)
-    #     tmp_data<-tmp_data %>% filter(tolower(famille)!="ensemble")
-    #     tmp_data$nb_etab<-as.numeric(tmp_data$nb_etab)
-    #     colnames(tmp_data)<-c("country","value")
-    #     tmp_data <-jsonlite::toJSON(tmp_data,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
-    #     r2d3(
-    #         data = tmp_data,
-    #         script ="www/assets/barplot_classic.js",
-    #         options = list(
-    #             background_color = 'rgb(215, 245, 255)',
-    #             title=paste("Nombre établissements par forme juridique (",input$dashboard_year_select_part2,")",sep=""),
-    #             var_name="Nombre établissements",
-    #             short_var_name="étab",
-    #             year=input$dashboard_year_select_part2
-    #         )
-    #     )
-    # })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	#----------------------------------------
+	# TAB2 - PART 2
+	#----------------------------------------
+
+	data_tabs2_part2  <- reactive({
+		year <-  input$select_year_tabs2_part2
+		scale  <-  input$select_scale_tabs2_part2
+		id_table  <- ""
+		if(scale=="REG"){
+			id_table  <- "TC13.csv"
+
+		}else if(scale=="DEP"){
+
+			id_table  <- "TC1.csv"
+		}else{
+			id_table  <- "EPCI_T1.csv"
+		}
+
+		PATH  <- paste("outputs/",year,"/",id_table,sep="") 
+		df <- tables[[PATH]]
+		print(PATH)
+
+
+		if(scale=="REG"){
+
+			df  <- tables[["outputs/2018/TC13.csv"]]
+
+			first_part  <- df %>% filter(REG=="France entière" & typo_B_det=="Ensemble" & typo_B=="Ensemble des secteurs d'activité") %>% select(-typo_B,-typo_B_det)
+
+			first_part  <- first_part %>% filter(ESS %in% c("ESS","ESS + Hors ESS")  )
+
+
+
+
+			for (i in 1:nrow(first_part)){
+					splitted  <- strsplit(first_part$famille[i],". ")[[1]]
+					if (splitted %>% length==1){
+
+						first_part$famille[i]  <- splitted[1]
+					}else if(splitted%>%length ==2){
+						first_part$famille[i]  <- splitted[2]
+					}else if(splitted %>%length ==3){
+						first_part$famille[i]  <- "Privé Hors ESS"
+					}
+			}
+
+
+
+			first_part  <- data.frame(first_part$REG,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+
+			colnames(first_part)  <- c("REG","ESS","famille","nb_etab")
+
+
+			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			for(ESS_val in first_part$ESS%>%unique ){
+					tmp  <- first_part%>% filter(ESS==ESS_val)
+					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					for (row in 1:nrow(tmp)){
+						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					}
+					first_part_bis  <- rbind(first_part_bis,tmp)
+			}
+
+
+
+			df  <- df %>% filter(REG=="Grand-Est" & typo_B_det=="Ensemble" & typo_B=="Ensemble des secteurs d'activité") %>% select(-typo_B,-typo_B_det)
+
+			df  <- df %>% filter(ESS %in% c("ESS","ESS + Hors ESS") )
+
+
+			for (i in 1:nrow(df)){
+				splitted  <- strsplit(df$famille[i],". ")[[1]]
+				if (splitted %>% length==1){
+
+					df$famille[i]  <- splitted[1]
+				}else if(splitted%>%length ==2){
+					df$famille[i]  <- splitted[2]
+				}else if(splitted %>%length ==3){
+					df$famille[i]  <- "Privé Hors ESS"
+				}
+			}
+
+			df  <- data.frame(df$REG,df$ESS,df$famille,df[,getIndexCol("nb_etab",df)])
+
+			colnames(df)  <- c("REG","ESS","famille","nb_etab")
+
+			new_data  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			for(ESS_val in df$ESS%>%unique ){
+				tmp  <- df%>% filter(ESS==ESS_val)
+				tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				new_data  <- rbind(new_data,tmp)
+			}
+			data  <- rbind(first_part_bis,new_data)
+
+
+		}else if(scale=="DEP"){
+			nom_DEP  <-  input$select_scale_det_tabs2_part2
+			
+			code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
+			code  <- code[[1]]
+
+			df  <- tables[["outputs/2018/TC1.csv"]]
+
+
+			first_part  <- df %>% filter(DEP=="France entière" & typo_A_det=="Ensemble" & typo_A=="Ensemble des secteurs d'activité") %>% select(-typo_A,-typo_A_det)
+
+			first_part  <- first_part %>% filter(ESS %in% c("ESS","ESS + Hors ESS")  )
+
+			for (i in 1:nrow(first_part)){
+				splitted  <- strsplit(first_part$famille[i],". ")[[1]]
+				if (splitted %>% length==1){
+
+					first_part$famille[i]  <- splitted[1]
+				}else if(splitted%>%length ==2){
+					first_part$famille[i]  <- splitted[2]
+				}else if(splitted %>%length ==3){
+					first_part$famille[i]  <- "Privé Hors ESS"
+				}
+			}
+			first_part  <- data.frame(first_part$DEP,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+
+			colnames(first_part)  <- c("DEP","ESS","famille","nb_etab")
+
+			first_part_bis  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			for(ESS_val in first_part$ESS%>%unique ){
+					tmp  <- first_part%>% filter(ESS==ESS_val)
+					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					for (row in 1:nrow(tmp)){
+						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					}
+					first_part_bis  <- rbind(first_part_bis,tmp)
+			}
+
+
+
+			df  <- df %>% filter(as.numeric(DEP)==as.numeric(code) & typo_A_det=="Ensemble" & typo_A=="Ensemble des secteurs d'activité") %>% select(-typo_A,-typo_A_det)
+			df  <- df %>% filter(ESS %in% c("ESS","ESS + Hors ESS") )
+			for (i in 1:nrow(df)){
+				splitted  <- strsplit(df$famille[i],". ")[[1]]
+				if (splitted %>% length==1){
+
+					df$famille[i]  <- splitted[1]
+				}else if(splitted%>%length ==2){
+					df$famille[i]  <- splitted[2]
+				}else if(splitted %>%length ==3){
+					df$famille[i]  <- "Privé Hors ESS"
+				}
+			}
+			df  <- data.frame(df$DEP,df$ESS,df$famille,df[,getIndexCol("nb_etab",df)])
+
+			colnames(df)  <- c("DEP","ESS","famille","nb_etab")
+			df$DEP  <- rep(nom_DEP,nrow(df))
+
+			new_data  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			for(ESS_val in df$ESS%>%unique ){
+					tmp  <- df%>% filter(ESS==ESS_val)
+					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					for (row in 1:nrow(tmp)){
+						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					}
+					new_data  <- rbind(new_data,tmp)
+			}
+			data  <- rbind(first_part_bis,new_data)
+
+
+
+		}else{
+
+			nom_EPCI  <- input$select_scale_det_tabs2_part2
+			df  <- df %>% filter(nom_complet==nom_EPCI & jurid1 %in%c("1-ASSO+FOND","2-COOPERATIVES","3-MUTUELLES","5A-PUBLIC","5B-PRIVE","6-TOTAL"))
+
+
+
+			for (i in 1:nrow(df)){
+				splitted  <- strsplit(df$jurid1[i],"-")[[1]]
+	
+				df$jurid1[i]  <- splitted[2]
+			}
+
+			df  <-  data.frame(df$nom_complet,df$jurid1,df[,getIndexCol("nb_etab",df)])
+
+			colnames(df) <- c("EPCI","famille","nb_etab")
+
+
+			tot  <- df[which(df$famille=="TOTAL"),"nb_etab"]
+			for (row in 1:nrow(df)){
+				df[row,getIndexCol("nb_etab",df)] <- round(df[row,getIndexCol("nb_etab",df)] /tot,2)*100
+			}
+			data  <- df
+
+		}
+		return (data)
+
+
+	}) 
+
+
+
+
+
+	output$plot_tabs2_part2_1  <-  renderD3({
+
+
+		df  <-  data_tabs2_part2()
+
+		if(input$select_scale_tabs2_part2 =="REG"){
+			
+
+			df  <- df %>% filter(REG==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2)%>% select(-REG,-ESS)
+		
+		}else if(input$select_scale_tabs2_part2 =="DEP"){
+
+			df  <- df %>%filter(DEP==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2)%>% select(-DEP,-ESS)
+		}else{
+
+			df  <- df %>% select(-EPCI)
+		}
+		colnames(df) <- c("country","value")
+		
+		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+		r2d3(
+			 data=df,
+
+			 script="www/assets/barplot_classic.js",
+			 options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
+						  var_name="Nombre établissements",
+						  short_var_name="étab",
+						  year=input$select_year_nb_etab
+
+			 )
+		)
+
+
+
+	})
+
+
+
+
+
+	output$plot_tabs2_part2_2  <- renderD3({
+
+	})
+
+
+
+
+
+	observe({
+		if(input$select_scale_tabs2_part2=="REG"){
+			choice=c("ESS","ESS + Hors ESS")
+		}else if(input$select_scale_tabs2_part2=="DEP"){
+			choice=c("ESS","ESS + Hors ESS")
+		}
+		else{
+			choice=c("-")
+		}
+		updateSelectInput(session,"select_ESS_tabs2_part2",choices=choice)
+	})
+
+
+
+
+
+
+	observe({
+		if(input$select_scale_tabs2_part2=="REG"){
+			choice=c(overAll_filter_REG)
+		}else if(input$select_scale_tabs2_part2=="DEP"){
+			choice=available_DEP$nom
+
+		}else{
+			choice=available_EPCI$nom_complet
+		}
+		updateSelectInput(session,"select_scale_det_tabs2_part2",choices=choice)
+	})
+	
+
 
 
 
@@ -714,7 +1086,14 @@ shinyApp(
 		select_year_tabs2_part1=select_year_tabs2_part1,
 		select_ESS_tabs2_part1=construct_select_box(c("ESS","Privé Hors ESS","Public"),"select_ESS_tabs2_part1"),
 		select_scale_det_tabs2_part1=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part1"),
-		plot_tabs2_part1_1=plot_tabs2_part1_1
+		plot_tabs2_part1_1=plot_tabs2_part1_1,
+		plot_tabs2_part1_2 =plot_tabs2_part1_2,
+		#----------------------------
+		#TABS2 - PART 2	
+		select_year_tabs2_part2=select_year_tabs2_part2,
+		select_ESS_tabs2_part2=construct_select_box(c("ESS","ESS + Hors ESS"),"select_ESS_tabs2_part2"),
+		select_scale_det_tabs2_part2=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part2"),
+		plot_tabs2_part2_1= plot_tabs2_part2_1
         ),
     server = server
 )

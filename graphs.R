@@ -246,7 +246,7 @@ for(fam in df$famille%>%unique ){
 
 new_dat  <-new_dat %>% filter(typo_A !="Ensemble des secteurs d'activité")
 
-rbind(new_dat,first_part_bis)$famille %>%unique
+rbind(new_dat,first_part_bis)
 #-----------------
 # EPCI 
 
@@ -293,3 +293,203 @@ for(fam in df$famille%>%unique ){
 }
 new_dat  <- new_dat%>%filter(typo1!="TOUS SECTEURS")
 new_dat$famille %>%unique
+
+
+
+
+
+
+#----------------------------------------
+#
+# TABS 2 - PART 2 : Nb etblissmeents /emplois par famille juridique
+#
+#----------------------------------------
+
+
+
+#------------------------
+# REG
+df  <- tables[["outputs/2018/TC13.csv"]]
+
+first_part  <- df %>% filter(REG=="France entière" & typo_B_det=="Ensemble" & typo_B=="Ensemble des secteurs d'activité") %>% select(-typo_B,-typo_B_det)
+
+first_part  <- first_part %>% filter(ESS %in% c("ESS","ESS + Hors ESS")  )
+
+
+
+
+for (i in 1:nrow(first_part)){
+		splitted  <- strsplit(first_part$famille[i],". ")[[1]]
+		if (splitted %>% length==1){
+
+			first_part$famille[i]  <- splitted[1]
+		}else if(splitted%>%length ==2){
+			first_part$famille[i]  <- splitted[2]
+		}else if(splitted %>%length ==3){
+			first_part$famille[i]  <- "Privé Hors ESS"
+		}
+}
+
+
+
+first_part  <- data.frame(first_part$REG,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+
+colnames(first_part)  <- c("REG","ESS","famille","nb_etab")
+
+
+first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+for(ESS_val in first_part$ESS%>%unique ){
+				tmp  <- first_part%>% filter(ESS==ESS_val)
+				tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				first_part_bis  <- rbind(first_part_bis,tmp)
+}
+
+
+
+df  <- df %>% filter(REG=="Grand-Est" & typo_B_det=="Ensemble" & typo_B=="Ensemble des secteurs d'activité") %>% select(-typo_B,-typo_B_det)
+
+df  <- df %>% filter(ESS %in% c("ESS","ESS + Hors ESS") )
+
+
+for (i in 1:nrow(df)){
+		splitted  <- strsplit(df$famille[i],". ")[[1]]
+		if (splitted %>% length==1){
+
+			df$famille[i]  <- splitted[1]
+		}else if(splitted%>%length ==2){
+			df$famille[i]  <- splitted[2]
+		}else if(splitted %>%length ==3){
+			df$famille[i]  <- "Privé Hors ESS"
+		}
+}
+
+df  <- data.frame(df$REG,df$ESS,df$famille,df[,getIndexCol("nb_etab",df)])
+
+colnames(df)  <- c("REG","ESS","famille","nb_etab")
+
+
+new_data  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+for(ESS_val in df$ESS%>%unique ){
+				tmp  <- df%>% filter(ESS==ESS_val)
+				tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				new_data  <- rbind(new_data,tmp)
+}
+rbind(first_part_bis,new_data)
+
+#-------------------
+# DEP 
+nom_DEP  <- "Marne"
+
+code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
+code  <- code[[1]]
+
+df  <- tables[["outputs/2018/TC1.csv"]]
+
+
+first_part  <- df %>% filter(DEP=="France entière" & typo_A_det=="Ensemble" & typo_A=="Ensemble des secteurs d'activité") %>% select(-typo_A,-typo_A_det)
+
+first_part  <- first_part %>% filter(ESS %in% c("ESS","ESS + Hors ESS")  )
+
+
+
+
+for (i in 1:nrow(first_part)){
+		splitted  <- strsplit(first_part$famille[i],". ")[[1]]
+		if (splitted %>% length==1){
+
+			first_part$famille[i]  <- splitted[1]
+		}else if(splitted%>%length ==2){
+			first_part$famille[i]  <- splitted[2]
+		}else if(splitted %>%length ==3){
+			first_part$famille[i]  <- "Privé Hors ESS"
+		}
+}
+
+
+
+first_part  <- data.frame(first_part$DEP,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+
+colnames(first_part)  <- c("DEP","ESS","famille","nb_etab")
+
+
+first_part_bis  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+for(ESS_val in first_part$ESS%>%unique ){
+				tmp  <- first_part%>% filter(ESS==ESS_val)
+				tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				first_part_bis  <- rbind(first_part_bis,tmp)
+}
+
+
+
+df  <- df %>% filter(as.numeric(DEP)==as.numeric(code) & typo_A_det=="Ensemble" & typo_A=="Ensemble des secteurs d'activité") %>% select(-typo_A,-typo_A_det)
+
+df  <- df %>% filter(ESS %in% c("ESS","ESS + Hors ESS") )
+
+
+for (i in 1:nrow(df)){
+		splitted  <- strsplit(df$famille[i],". ")[[1]]
+		if (splitted %>% length==1){
+
+			df$famille[i]  <- splitted[1]
+		}else if(splitted%>%length ==2){
+			df$famille[i]  <- splitted[2]
+		}else if(splitted %>%length ==3){
+			df$famille[i]  <- "Privé Hors ESS"
+		}
+}
+
+df  <- data.frame(df$DEP,df$ESS,df$famille,df[,getIndexCol("nb_etab",df)])
+
+colnames(df)  <- c("DEP","ESS","famille","nb_etab")
+df$DEP  <- rep(nom_DEP,nrow(df))
+
+new_data  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+for(ESS_val in df$ESS%>%unique ){
+				tmp  <- df%>% filter(ESS==ESS_val)
+				tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				new_data  <- rbind(new_data,tmp)
+}
+rbind(first_part_bis,new_data)
+
+
+
+
+#-------------------
+# EPCI
+nom_EPCI  <- "CC Faucigny-Glières" 
+df  <- tables[["outputs/2018/EPCI_T1.csv"]]
+df  <- df %>% filter(nom_complet==nom_EPCI & jurid1 %in%c("1-ASSO+FOND","2-COOPERATIVES","3-MUTUELLES","5A-PUBLIC","5B-PRIVE","6-TOTAL"))
+
+
+
+for (i in 1:nrow(df)){
+	splitted  <- strsplit(df$jurid1[i],"-")[[1]]
+	
+	df$jurid1[i]  <- splitted[2]
+}
+
+df  <-  data.frame(df$nom_complet,df$jurid1,df[,getIndexCol("nb_etab",df)])
+
+colnames(df) <- c("EPCI","famille","nb_etab")
+
+new_data  <-  data.frame("EPCI"=character(),"famille"=character(),"var"=numeric())
+
+tot  <- df[which(df$famille=="TOTAL"),"nb_etab"]
+for (row in 1:nrow(df)){
+			df[row,getIndexCol("nb_etab",df)] <- round(df[row,getIndexCol("nb_etab",df)] /tot,2)*100
+}
+
+
+

@@ -21,8 +21,6 @@
 
   <div class="tabs_headers">
     <span data-tab-value="#dashboard">DashBoard</span>
-    <span data-tab-value="#tabs2">l'ESS Grand Est</span>
-	<span data-tab-value="#Cartographie">Cartographie</span>
   </div>
 
 
@@ -124,11 +122,6 @@
 
 	  </div>
 
-    </div>
-    
-
-    <div class="tabs-content" id="tabs2" data-tab-info>
-
 			<div id="tabs-2-container-block">
 
 				<div id="tabs-2-container-flex">
@@ -149,13 +142,35 @@
 							{{select_ESS_tabs2_part1}}
 							{{select_scale_det_tabs2_part1}}
 						</div>
-						<div id="plot_tabs2_part1_1">
+						<div id="div-plot-tabs2-part1_1">
 							{{plot_tabs2_part1_1}}
 						</div>
-
+						
+						<div id="div-plot-tabs2-part1_2">
+							{{plot_tabs2_part1_2}}
+						</div>
 					</div>
 
 					<div id="part2-tabs2" class="tabs2-part">
+						<span> Les familles juridiques en région Grand-Est</span>
+						<div id="select-boxes-tabs2-part2">
+
+
+							{{select_year_tabs2_part2}}
+							<select  id="select_scale_tabs2_part2" class="select_box_custom">
+								<option value="REG">Régionale</option>
+								<option value="DEP">Départmentale</option>
+								<option value="EPCI">EPCI</option>
+							</select>
+							{{select_ESS_tabs2_part2}}
+							{{select_scale_det_tabs2_part2}}
+						</div>
+						<div id="div-plot-tabs2-part2_1">
+							{{plot_tabs2_part2_1}}
+						</div>
+						
+						<div id="div-plot-tabs2-part2_2">
+						</div>
 					</div>
 
 					<div id="part3-tabs2" class="tabs2-part">
@@ -163,12 +178,9 @@
 					</div>
 				</div>		
 			</div>
-	</div>
-
-	<div class="tabs-content" id="Cartographie" data-tab-info>
-        <p>cast</p>
 
     </div>
+    
   </div>
 
   <!-- SCRIPT GLOBAL TABS DASHBOARD-GRAPHS-CAST   --->
