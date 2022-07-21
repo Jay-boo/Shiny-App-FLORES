@@ -142,7 +142,7 @@ plot_dashboard_part_2 =d3Output("plot_dashboard_part_2",height = "90%")
 plot_tabs2_part1_1 =d3Output("plot_tabs2_part1_1",height = "100%",width="90%")
 plot_tabs2_part1_2 =d3Output("plot_tabs2_part1_2",height = "100%",width="90%")
 plot_tabs2_part2_1 =d3Output("plot_tabs2_part2_1",height = "100%",width="90%")
-
+plot_tabs2_part2_2 =d3Output("plot_tabs2_part2_2",height = "100%",width="90%")
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
     selectbox_HTML=paste(selectbox_HTML,'<option value="',choice,'">',choice,'</option>',sep="")
@@ -798,12 +798,10 @@ server <- function(input,output,session){
 
 		PATH  <- paste("outputs/",year,"/",id_table,sep="") 
 		df <- tables[[PATH]]
-		print(PATH)
 
 
 		if(scale=="REG"){
 
-			df  <- tables[["outputs/2018/TC13.csv"]]
 
 			first_part  <- df %>% filter(REG=="France entière" & typo_B_det=="Ensemble" & typo_B=="Ensemble des secteurs d'activité") %>% select(-typo_B,-typo_B_det)
 
@@ -882,7 +880,6 @@ server <- function(input,output,session){
 			code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
 			code  <- code[[1]]
 
-			df  <- tables[["outputs/2018/TC1.csv"]]
 
 
 			first_part  <- df %>% filter(DEP=="France entière" & typo_A_det=="Ensemble" & typo_A=="Ensemble des secteurs d'activité") %>% select(-typo_A,-typo_A_det)
@@ -989,14 +986,14 @@ server <- function(input,output,session){
 		if(input$select_scale_tabs2_part2 =="REG"){
 			
 
-			df  <- df %>% filter(REG==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2)%>% select(-REG,-ESS)
+			df  <- df %>% filter(REG==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2 & famille !="Ensemble")%>% select(-REG,-ESS)
 		
 		}else if(input$select_scale_tabs2_part2 =="DEP"){
 
-			df  <- df %>%filter(DEP==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2)%>% select(-DEP,-ESS)
+			df  <- df %>%filter(DEP==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2 & famille !="Ensemble")%>% select(-DEP,-ESS)
 		}else{
 
-			df  <- df %>% select(-EPCI)
+			df  <- df %>% filter(famille!="TOTAL")%>% select(-EPCI)
 		}
 		colnames(df) <- c("country","value")
 		
@@ -1024,6 +1021,74 @@ server <- function(input,output,session){
 
 
 	output$plot_tabs2_part2_2  <- renderD3({
+		year  <- input$select_year_tabs2_part2
+		PATH  <- paste("outputs/",year,"/TC13.csv",sep="") 
+		df <- tables[[PATH]]
+
+
+
+
+			first_part  <- df %>% filter(REG=="France entière" & typo_B_det=="Ensemble" & typo_B=="Ensemble des secteurs d'activité") %>% select(-typo_B,-typo_B_det)
+
+			first_part  <- first_part %>% filter(ESS %in% c("ESS","ESS + Hors ESS")  )
+
+
+
+
+			for (i in 1:nrow(first_part)){
+					splitted  <- strsplit(first_part$famille[i],". ")[[1]]
+					if (splitted %>% length==1){
+
+						first_part$famille[i]  <- splitted[1]
+					}else if(splitted%>%length ==2){
+						first_part$famille[i]  <- splitted[2]
+					}else if(splitted %>%length ==3){
+						first_part$famille[i]  <- "Privé Hors ESS"
+					}
+			}
+
+
+
+			first_part  <- data.frame(first_part$REG,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+
+			colnames(first_part)  <- c("REG","ESS","famille","nb_etab")
+
+
+			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			for(ESS_val in first_part$ESS%>%unique ){
+					tmp  <- first_part%>% filter(ESS==ESS_val)
+					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					for (row in 1:nrow(tmp)){
+						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					}
+					first_part_bis  <- rbind(first_part_bis,tmp)
+			}
+			if (input$select_scale_tabs2_part2!="EPCI"){
+				filter_ESS =input$select_ESS_tabs2_part2
+			}else{
+				filter_ESS="ESS"
+
+			}
+
+
+			first_part_bis  <- first_part_bis %>% filter (ESS==filter_ESS)
+			df  <- first_part_bis %>% select(-REG,-ESS) %>% filter(famille !="Ensemble")
+			colnames(df)  <-  c("country","value")
+
+			df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+			r2d3(
+				 data=df,
+
+				script="www/assets/barplot_classic.js",
+				options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
+						  var_name="Nombre établissements",
+						  short_var_name="étab",
+						  year=input$select_year_nb_etab
+
+			 )
+		)
 
 	})
 
@@ -1093,7 +1158,8 @@ shinyApp(
 		select_year_tabs2_part2=select_year_tabs2_part2,
 		select_ESS_tabs2_part2=construct_select_box(c("ESS","ESS + Hors ESS"),"select_ESS_tabs2_part2"),
 		select_scale_det_tabs2_part2=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part2"),
-		plot_tabs2_part2_1= plot_tabs2_part2_1
+		plot_tabs2_part2_1= plot_tabs2_part2_1,
+		plot_tabs2_part2_2 = plot_tabs2_part2_2
         ),
     server = server
 )
