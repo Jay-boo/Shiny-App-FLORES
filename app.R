@@ -465,6 +465,7 @@ server <- function(input,output,session){
 	data_tabs2_part1  <- reactive({
 		year  <- input$select_year_tabs2_part1
 		scale  <- input$select_scale_tabs2_part1
+		varLab  <- input$select_var_tabs2_part1
 		id_table  <- ""
 		if(scale=="REG"){
 			id_table  <- "TC13.csv"
@@ -491,17 +492,17 @@ server <- function(input,output,session){
 			}
 
 
-			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$typo_B,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$typo_B,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("REG","famille","typo_B","nb_etab")
+			colnames(first_part)  <- c("REG","famille","typo_B",varLab)
 
 
 			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
+				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -517,14 +518,14 @@ server <- function(input,output,session){
 			}
 
 
-			df  <- data.frame(df$REG,df$famille,df$typo_B,df[,getIndexCol("nb_etab",df)])
-			colnames(df)  <- c("REG","famille","typo_B","nb_etab")
+			df  <- data.frame(df$REG,df$famille,df$typo_B,df[,getIndexCol(varLab,df)])
+			colnames(df)  <- c("REG","famille","typo_B",varLab)
 			new_dat  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
+				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 			new_dat  <- rbind(new_dat,tmp)
 			}
@@ -553,17 +554,17 @@ server <- function(input,output,session){
 			}
 
 
-			first_part  <- data.frame(first_part$DEP,first_part$famille,first_part$typo_A,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$DEP,first_part$famille,first_part$typo_A,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("DEP","famille","typo_A","nb_etab")
+			colnames(first_part)  <- c("DEP","famille","typo_A",varLab)
 
 
 			first_part_bis  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),"nb_etab"]
+				tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -578,14 +579,14 @@ server <- function(input,output,session){
 				df$typo_A[i]  <- splitted[1]
 			}
 			df$DEP =rep(nom_DEP,nrow(df))
-			df  <- data.frame(df$DEP,df$famille,df$typo_A,df[,getIndexCol("nb_etab",df)])
-			colnames(df)  <- c("DEP","famille","typo_A","nb_etab")
+			df  <- data.frame(df$DEP,df$famille,df$typo_A,df[,getIndexCol(varLab,df)])
+			colnames(df)  <- c("DEP","famille","typo_A",varLab)
 			new_dat  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),"nb_etab"]
+				tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				new_dat  <- rbind(new_dat,tmp)
 			}
@@ -623,15 +624,15 @@ server <- function(input,output,session){
 			df[which(df$typo1=="NON"),]$typo1  <- "NON CLASSES"
 
 
-			df  <- data.frame(df$nom_complet,df$jurid2,df$typo1,df[,getIndexCol("nb_etab",df)])
-			colnames(df)  <- c("EPCI","famille","typo1","nb_etab")
+			df  <- data.frame(df$nom_complet,df$jurid2,df$typo1,df[,getIndexCol(varLab,df)])
+			colnames(df)  <- c("EPCI","famille","typo1",varLab)
 			new_dat  <-  data.frame("EPCI"=character(),"famille"=character(),"typo1"=character(),"var"=numeric(),"prct"=numeric())
 
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$typo1=="TOUS SECTEURS"),"nb_etab"]
+				tot  <- tmp[which(tmp$typo1=="TOUS SECTEURS"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				new_dat  <- rbind(new_dat,tmp)
 			}
@@ -644,6 +645,7 @@ server <- function(input,output,session){
 
 
 	output$plot_tabs2_part1_1  <- renderD3({
+		varLab  <- input$select_scale_tabs2_part1
 
 		df  <- data_tabs2_part1()
 		if( input$select_scale_tabs2_part1=="REG"){
@@ -658,7 +660,7 @@ server <- function(input,output,session){
 
 		}
 		if(input$prct_part1){
-			df  <-  df[,-getIndexCol("nb_etab",df)]
+			df  <-  df[,-getIndexCol(varLab,df)]
 		}else{
 			df  <-  df %>% select(-prct)
 		}
@@ -676,7 +678,7 @@ server <- function(input,output,session){
 						  title=paste("Nombre Etablissement",input$select_year_tabs2_part1,sep=" "),
 						  var_name="Nombre établissements",
 						  short_var_name="étab",
-						  year=input$select_year_nb_etab
+						  year=input$select_year_tabs2_part1
 
 			 )
 		)
@@ -694,6 +696,7 @@ server <- function(input,output,session){
 
 
 	output$plot_tabs2_part1_2  <- renderD3({
+		varLab  <- input$select_var_tabs2_part1
 
 		df  <- data_tabs2_part1()
 		if( input$select_scale_tabs2_part1=="REG"){
@@ -723,17 +726,17 @@ server <- function(input,output,session){
 			}
 
 
-			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$typo_B,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$typo_B,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("REG","famille","typo_B","nb_etab")
+			colnames(first_part)  <- c("REG","famille","typo_B",varLab)
 
 
 			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
+				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -746,12 +749,12 @@ server <- function(input,output,session){
 			
 			first_part_bis  <- first_part_bis %>% filter(typo_B!="Ensemble des secteurs d'activité")
 			first_part_bis  <- 	first_part_bis %>% filter(famille==ESS_filtre)
-			df  <- data.frame(first_part_bis$typo_B,first_part_bis[,getIndexCol("nb_etab",first_part_bis)],first_part_bis$prct)
-			colnames(df)  <- c("typo_B","nb_etab","prct")
+			df  <- data.frame(first_part_bis$typo_B,first_part_bis[,getIndexCol(varLab,first_part_bis)],first_part_bis$prct)
+			colnames(df)  <- c("typo_B",varLab,"prct")
 
 		}
 		if(input$prct_part1){
-			df  <-  df[,-getIndexCol("nb_etab",df)]
+			df  <-  df[,-getIndexCol(varLab,df)]
 		}else{
 			df  <-  df %>% select(-prct)
 		}
@@ -768,7 +771,7 @@ server <- function(input,output,session){
 						  title=paste("Nombre Etablissement",input$select_year_tabs2_part1,sep=" "),
 						  var_name="Nombre établissements",
 						  short_var_name="étab",
-						  year=input$select_year_nb_etab
+						  year=input$select_year_tabs2_part1
 
 			 )
 		)
@@ -846,6 +849,7 @@ server <- function(input,output,session){
 	data_tabs2_part2  <- reactive({
 		year <-  input$select_year_tabs2_part2
 		scale  <-  input$select_scale_tabs2_part2
+		varLab  <- input$select_var_tabs2_part2
 		id_table  <- ""
 		if(scale=="REG"){
 			id_table  <- "TC13.csv"
@@ -885,17 +889,17 @@ server <- function(input,output,session){
 
 
 
-			first_part  <- data.frame(first_part$REG,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$REG,first_part$ESS,first_part$famille,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("REG","ESS","famille","nb_etab")
+			colnames(first_part)  <- c("REG","ESS","famille",varLab)
 
 
 			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in first_part$ESS%>%unique ){
 					tmp  <- first_part%>% filter(ESS==ESS_val)
-					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					tot  <- tmp[which(tmp$famille=="Ensemble"),varLab]
 					for (row in 1:nrow(tmp)){
-						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 					}
 					first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -919,16 +923,16 @@ server <- function(input,output,session){
 				}
 			}
 
-			df  <- data.frame(df$REG,df$ESS,df$famille,df[,getIndexCol("nb_etab",df)])
+			df  <- data.frame(df$REG,df$ESS,df$famille,df[,getIndexCol(varLab,df)])
 
-			colnames(df)  <- c("REG","ESS","famille","nb_etab")
+			colnames(df)  <- c("REG","ESS","famille",varLab)
 
 			new_data  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in df$ESS%>%unique ){
 				tmp  <- df%>% filter(ESS==ESS_val)
-				tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+				tot  <- tmp[which(tmp$famille=="Ensemble"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				new_data  <- rbind(new_data,tmp)
 			}
@@ -958,16 +962,16 @@ server <- function(input,output,session){
 					first_part$famille[i]  <- "Privé Hors ESS"
 				}
 			}
-			first_part  <- data.frame(first_part$DEP,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$DEP,first_part$ESS,first_part$famille,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("DEP","ESS","famille","nb_etab")
+			colnames(first_part)  <- c("DEP","ESS","famille",varLab)
 
 			first_part_bis  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in first_part$ESS%>%unique ){
 					tmp  <- first_part%>% filter(ESS==ESS_val)
-					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					tot  <- tmp[which(tmp$famille=="Ensemble"),varLab]
 					for (row in 1:nrow(tmp)){
-						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 					}
 					first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -987,17 +991,17 @@ server <- function(input,output,session){
 					df$famille[i]  <- "Privé Hors ESS"
 				}
 			}
-			df  <- data.frame(df$DEP,df$ESS,df$famille,df[,getIndexCol("nb_etab",df)])
+			df  <- data.frame(df$DEP,df$ESS,df$famille,df[,getIndexCol(varLab,df)])
 
-			colnames(df)  <- c("DEP","ESS","famille","nb_etab")
+			colnames(df)  <- c("DEP","ESS","famille",varLab)
 			df$DEP  <- rep(nom_DEP,nrow(df))
 
 			new_data  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in df$ESS%>%unique ){
 					tmp  <- df%>% filter(ESS==ESS_val)
-					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					tot  <- tmp[which(tmp$famille=="Ensemble"),varLab]
 					for (row in 1:nrow(tmp)){
-						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 					}
 					new_data  <- rbind(new_data,tmp)
 			}
@@ -1019,14 +1023,14 @@ server <- function(input,output,session){
 			}
 
 			prct=rep(NA,nrow(df))
-			df  <-  data.frame(df$nom_complet,df$jurid1,df[,getIndexCol("nb_etab",df)],prct)
+			df  <-  data.frame(df$nom_complet,df$jurid1,df[,getIndexCol(varLab,df)],prct)
 
-			colnames(df) <- c("EPCI","famille","nb_etab","prct")
+			colnames(df) <- c("EPCI","famille",varLab,"prct")
 
 
-			tot  <- df[which(df$famille=="TOTAL"),"nb_etab"]
+			tot  <- df[which(df$famille=="TOTAL"),varLab]
 			for (row in 1:nrow(df)){
-				df[row,"prct"] <- round(df[row,getIndexCol("nb_etab",df)] /tot,2)*100
+				df[row,"prct"] <- round(df[row,getIndexCol(varLab,df)] /tot,2)*100
 			}
 			data  <- df
 
@@ -1042,6 +1046,7 @@ server <- function(input,output,session){
 
 	output$plot_tabs2_part2_1  <-  renderD3({
 
+		varLab  <- input$select_var_tabs2_part2
 
 		df  <-  data_tabs2_part2()
 
@@ -1058,7 +1063,7 @@ server <- function(input,output,session){
 			df  <- df %>% filter(famille!="TOTAL")%>% select(-EPCI)
 		}
 		if(input$prct_part2){
-			df  <- df[,-getIndexCol("nb_etab",df)]
+			df  <- df[,-getIndexCol(varLab,df)]
 		}else{
 			df  <- df%>%select(-prct)
 		}
@@ -1074,7 +1079,7 @@ server <- function(input,output,session){
 						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
 						  var_name="Nombre établissements",
 						  short_var_name="étab",
-						  year=input$select_year_nb_etab
+						  year=input$select_year_tabs2_part2
 
 			 )
 		)
@@ -1088,6 +1093,7 @@ server <- function(input,output,session){
 
 
 	output$plot_tabs2_part2_2  <- renderD3({
+		varLab  <- input$select_var_tabs2_part2
 		year  <- input$select_year_tabs2_part2
 		PATH  <- paste("outputs/",year,"/TC13.csv",sep="") 
 		df <- tables[[PATH]]
@@ -1116,17 +1122,17 @@ server <- function(input,output,session){
 
 
 
-			first_part  <- data.frame(first_part$REG,first_part$ESS,first_part$famille,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$REG,first_part$ESS,first_part$famille,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("REG","ESS","famille","nb_etab")
+			colnames(first_part)  <- c("REG","ESS","famille",varLab)
 
 
 			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in first_part$ESS%>%unique ){
 					tmp  <- first_part%>% filter(ESS==ESS_val)
-					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
+					tot  <- tmp[which(tmp$famille=="Ensemble"),varLab]
 					for (row in 1:nrow(tmp)){
-						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 					}
 					first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -1142,7 +1148,7 @@ server <- function(input,output,session){
 			df  <- first_part_bis %>% select(-REG,-ESS) %>% filter(famille !="Ensemble")
 			
 			if(input$prct_part2){
-				df  <- df[,-getIndexCol("nb_etab",df)]
+				df  <- df[,-getIndexCol(varLab,df)]
 			}else{
 				df  <-  df %>% select(-prct)
 			}
@@ -1158,7 +1164,7 @@ server <- function(input,output,session){
 						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
 						  var_name="Nombre établissements",
 						  short_var_name="étab",
-						  year=input$select_year_nb_etab
+						  year=input$select_year_tabs2_part2
 
 			 )
 		)
@@ -1202,7 +1208,7 @@ server <- function(input,output,session){
 
 	output$export_csv_tab2_part2  <- downloadHandler(
 													 filename=function(){
-														 paste("Repartition","nb_etab",input$select_year_tabs2_part2,"par_famille_juridique_scale=",input$select_scale_det_tabs2_part2,".csv",sep="")
+														 paste("Repartition",input$select_var_tabs2_part2,input$select_year_tabs2_part2,"par_famille_juridique_scale=",input$select_scale_det_tabs2_part2,".csv",sep="")
 
 													 },
 													 content = function(file){
@@ -1229,6 +1235,7 @@ server <- function(input,output,session){
 	data_tabs2_part3  <- reactive({
 		year  <- input$select_year_tabs2_part3
 		scale  <-  input$select_scale_tabs2_part3
+		varLab  <-  input$select_var_tabs2_part3
 		id_table  <- ""
 		if(scale=="REG"){
 			id_table  <- "TC14.csv"
@@ -1261,17 +1268,17 @@ server <- function(input,output,session){
 			}
 
 
-			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$taille_etab,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$taille_etab,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("REG","famille","taille_etab","nb_etab")
+			colnames(first_part)  <- c("REG","famille","taille_etab",varLab)
 
 
 			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -1292,14 +1299,14 @@ server <- function(input,output,session){
 			}
 
 
-			df  <- data.frame(df$REG,df$famille,df$taille_etab,df[,getIndexCol("nb_etab",df)])
-			colnames(df)  <- c("REG","famille","taille_etab","nb_etab")
+			df  <- data.frame(df$REG,df$famille,df$taille_etab,df[,getIndexCol(varLab,df)])
+			colnames(df)  <- c("REG","famille","taille_etab",varLab)
 			new_dat  <-  data.frame("REG"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				new_dat  <- rbind(new_dat,tmp)
 			}
@@ -1333,17 +1340,17 @@ server <- function(input,output,session){
 			}
 
 
-			first_part  <- data.frame(first_part$DEP,first_part$famille,first_part$taille_etab,first_part[,getIndexCol("nb_etab",first_part)])
+			first_part  <- data.frame(first_part$DEP,first_part$famille,first_part$taille_etab,first_part[,getIndexCol(varLab,first_part)])
 
-			colnames(first_part)  <- c("DEP","famille","taille_etab","nb_etab")
+			colnames(first_part)  <- c("DEP","famille","taille_etab",varLab)
 
 
 			first_part_bis  <-  data.frame("DEP"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -1364,14 +1371,14 @@ server <- function(input,output,session){
 			}
 			df$DEP  <- rep(nom_DEP,nrow(df))
 
-			df  <- data.frame(df$DEP,df$famille,df$taille_etab,df[,getIndexCol("nb_etab",df)])
-			colnames(df)  <- c("DEP","famille","taille_etab","nb_etab")
+			df  <- data.frame(df$DEP,df$famille,df$taille_etab,df[,getIndexCol(varLab,df)])
+			colnames(df)  <- c("DEP","famille","taille_etab",varLab)
 			new_dat  <-  data.frame("DEP"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
-				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),varLab]
 				for (row in 1:nrow(tmp)){
-					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol(varLab,tmp)] /tot,2)*100
 				}
 				new_dat  <- rbind(new_dat,tmp)
 			}
@@ -1386,6 +1393,7 @@ server <- function(input,output,session){
 
 
 	output$plot_tabs2_part3_1  <- renderD3({
+		varLab  <- input$select_var_tabs2_part3
 		df  <- data_tabs2_part3()
 
 		if(input$select_scale_tabs2_part3 =="REG"){
@@ -1403,7 +1411,7 @@ server <- function(input,output,session){
 
 			df  <- data.frame(df$taille_etab,df$prct)
 		}else{
-			df  <- data.frame(df$taille_etab,df[,getIndexCol("nb_etab",df)])
+			df  <- data.frame(df$taille_etab,df[,getIndexCol(varLab,df)])
 		}
 		colnames(df) <- c("country","value")
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
@@ -1416,14 +1424,19 @@ server <- function(input,output,session){
 						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
 						  var_name="Nombre établissements",
 						  short_var_name="étab",
-						  year=input$select_year_nb_etab
+						  year=input$select_year_tabs2_part3
 
 			 )
 		)
 
 	})
+
+
+
+
 	output$plot_tabs2_part3_2  <- renderD3({
 
+		varLab  <- input$select_var_tabs2_part3
 		df  <- data_tabs2_part3()
 
 		if(input$select_scale_tabs2_part3 =="REG"){
@@ -1441,7 +1454,7 @@ server <- function(input,output,session){
 
 			df  <- data.frame(df$taille_etab,df$prct)
 		}else{
-			df  <- data.frame(df$taille_etab,df[,getIndexCol("nb_etab",df)])
+			df  <- data.frame(df$taille_etab,df[,getIndexCol(varLab,df)])
 		}
 		colnames(df) <- c("country","value")
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
@@ -1454,7 +1467,7 @@ server <- function(input,output,session){
 						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
 						  var_name="Nombre établissements",
 						  short_var_name="étab",
-						  year=input$select_year_nb_etab
+						  year=input$select_year_tabs2_part3
 
 			 )
 		)
