@@ -493,3 +493,172 @@ for (row in 1:nrow(df)){
 
 
 
+
+
+
+
+
+#--------------------------------------
+
+
+# TABS2 - PART 3 : Nombre d'etab par Taille des etablissements
+
+#-----------------------
+
+
+#------------------
+# REG
+df  <- tables[["outputs/2018/TC14.csv"]]
+
+
+
+pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+colnames(pattern)  <-  c("ESS","famille")
+patterns  <- paste(pattern$ESS,pattern$famille,sep="")
+
+
+first_part  <-df%>% filter(REG=="France entière")
+
+first_part  <- first_part %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+
+first_part[which(first_part$famille=="Ensemble"),]$famille   <-  "ESS"
+for (i in 1:nrow(first_part)){
+	splitted  <- strsplit(first_part$taille_etab[i],"- ")[[1]]
+	if(length(splitted)==1){
+		first_part$taille_etab[i]  <- splitted[1]
+	}else{
+		first_part$taille_etab[i]  <- splitted[2]
+	}
+}
+
+
+first_part  <- data.frame(first_part$REG,first_part$famille,first_part$taille_etab,first_part[,getIndexCol("nb_etab",first_part)])
+
+colnames(first_part)  <- c("REG","famille","taille_etab","nb_etab")
+
+
+first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+for(fam in first_part$famille%>%unique ){
+	tmp  <- first_part%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	first_part_bis  <- rbind(first_part_bis,tmp)
+}
+
+
+
+
+df  <- df %>% filter(REG=="Grand-Est"  )
+df  <- df %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+df[which(df$famille=="Ensemble"),]$famille   <-  "ESS"
+for (i in 1:nrow(df)){
+	splitted  <- strsplit(df$taille_etab[i],"- ")[[1]]
+	if(length(splitted)==1){
+		df$taille_etab[i]  <- splitted[1]
+	}else{
+		df$taille_etab[i]  <- splitted[2]
+	}
+}
+
+
+df  <- data.frame(df$REG,df$famille,df$taille_etab,df[,getIndexCol("nb_etab",df)])
+colnames(df)  <- c("REG","famille","taille_etab","nb_etab")
+new_dat  <-  data.frame("REG"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+for(fam in df$famille%>%unique ){
+	tmp  <- df%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	new_dat  <- rbind(new_dat,tmp)
+}
+
+rbind(new_dat,first_part_bis)
+#------------------
+# DEP
+
+df  <- tables[["outputs/2018/TC2.csv"]]
+
+
+nom_DEP  <- "Marne"
+
+code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
+code  <- code[[1]]
+
+
+pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+colnames(pattern)  <-  c("ESS","famille")
+patterns  <- paste(pattern$ESS,pattern$famille,sep="")
+
+
+first_part  <-df%>% filter(DEP=="France entière")
+
+first_part  <- first_part %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+
+first_part[which(first_part$famille=="Ensemble"),]$famille   <-  "ESS"
+for (i in 1:nrow(first_part)){
+	splitted  <- strsplit(first_part$taille_etab[i],"- ")[[1]]
+	if(length(splitted)==1){
+		first_part$taille_etab[i]  <- splitted[1]
+	}else{
+		first_part$taille_etab[i]  <- splitted[2]
+	}
+}
+
+
+first_part  <- data.frame(first_part$DEP,first_part$famille,first_part$taille_etab,first_part[,getIndexCol("nb_etab",first_part)])
+
+colnames(first_part)  <- c("DEP","famille","taille_etab","nb_etab")
+
+
+first_part_bis  <-  data.frame("DEP"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+for(fam in first_part$famille%>%unique ){
+	tmp  <- first_part%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	first_part_bis  <- rbind(first_part_bis,tmp)
+}
+
+
+
+
+df  <- df %>% filter(as.numeric(DEP)==as.numeric(code)  )
+df  <- df %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+df[which(df$famille=="Ensemble"),]$famille   <-  "ESS"
+for (i in 1:nrow(df)){
+	splitted  <- strsplit(df$taille_etab[i],"- ")[[1]]
+	if(length(splitted)==1){
+		df$taille_etab[i]  <- splitted[1]
+	}else{
+		df$taille_etab[i]  <- splitted[2]
+	}
+}
+df$DEP  <- rep(nom_DEP,nrow(df))
+
+df  <- data.frame(df$DEP,df$famille,df$taille_etab,df[,getIndexCol("nb_etab",df)])
+colnames(df)  <- c("DEP","famille","taille_etab","nb_etab")
+new_dat  <-  data.frame("DEP"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+for(fam in df$famille%>%unique ){
+	tmp  <- df%>% filter(famille==fam)
+	tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+	}
+	new_dat  <- rbind(new_dat,tmp)
+}
+
+tmp  <- rbind(new_dat,first_part_bis)
+# TC14.csv
+tmp  <- tmp %>% filter(DEP==nom_DEP)%>% select(-DEP,-prct)
+
+ jsonlite::toJSON(tmp,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+#-----------------
+# EPCI
+
+# Pas d'information
+
+

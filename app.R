@@ -143,6 +143,10 @@ plot_tabs2_part1_1 =d3Output("plot_tabs2_part1_1",height = "100%",width="90%")
 plot_tabs2_part1_2 =d3Output("plot_tabs2_part1_2",height = "100%",width="90%")
 plot_tabs2_part2_1 =d3Output("plot_tabs2_part2_1",height = "100%",width="90%")
 plot_tabs2_part2_2 =d3Output("plot_tabs2_part2_2",height = "100%",width="90%")
+plot_tabs2_part3_1 =d3Output("plot_tabs2_part3_1",height = "100%",width="90%")
+plot_tabs2_part3_2 =d3Output("plot_tabs2_part3_2",height = "100%",width="90%")
+
+
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
     selectbox_HTML=paste(selectbox_HTML,'<option value="',choice,'">',choice,'</option>',sep="")
@@ -157,6 +161,10 @@ select_year_nb_etab=HTML(paste('<select id="select_year_nb_etab" class="select_b
 select_year_tabs2_part1=HTML(paste('<select id="select_year_tabs2_part1" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
 
 select_year_tabs2_part2=HTML(paste('<select id="select_year_tabs2_part2" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
+
+
+select_year_tabs2_part3=HTML(paste('<select id="select_year_tabs2_part3" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
+
 select_scale_det_REG= construct_select_box(c(overAll_filter_REG),"select_scale_det")
 DEP_GE=c("08","10","51","52","54","55","57","67","68","88")
 
@@ -316,7 +324,7 @@ server <- function(input,output,session){
 			colnames(second_part)=c("REG",varLab)
 			second_part  <- arrange(second_part,desc(second_part[,getIndexCol(varLab,second_part)]))
 			second_part  <- second_part%>%head(3)
-			first_part <-  rbind(c("moyenne",mean(tmp[,getIndexCol(varLab,tmp)])),first_part)
+			first_part <-  rbind(c("moyenne",round(mean(tmp[,getIndexCol(varLab,tmp)])),3),first_part)
 			data  <- rbind(first_part,second_part)
 
 		}else if(input$select_scale_nb_etab=="DEP"){
@@ -348,7 +356,7 @@ server <- function(input,output,session){
 			second_part  <- left_join(second_part,available_DEP_bis)
 			second_part  <- data.frame(second_part$nom,second_part[,getIndexCol(varLab,second_part)])
 			colnames(second_part) = c("DEP",varLab)
-			first_part  <- rbind(c("moyenne",mean(tmp[,getIndexCol(varLab,tmp)])),first_part)
+			first_part  <- rbind(c("moyenne",round(mean(tmp[,getIndexCol(varLab,tmp)])),3),first_part)
 			data  <- rbind(first_part,second_part)
 
 		}else{
@@ -373,7 +381,7 @@ server <- function(input,output,session){
 			colnames(second_part)  <- c("nom_complet",varLab)
 			second_part  <- arrange(second_part,desc(second_part[,getIndexCol(varLab,second_part)]))
 			second_part  <- second_part %>% head(3)
-			first_part  <- rbind(c("moyenne",mean(tmp[,getIndexCol(varLab,tmp)])),first_part)
+			first_part  <- rbind(c("moyenne",round(mean(tmp[,getIndexCol(varLab,tmp)])),3),first_part)
 			data  <- rbind(first_part,second_part)
 		}
 
@@ -458,12 +466,12 @@ server <- function(input,output,session){
 			colnames(first_part)  <- c("REG","famille","typo_B","nb_etab")
 
 
-			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric())
+			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
 				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
 				for (row in 1:nrow(tmp)){
-					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -481,12 +489,12 @@ server <- function(input,output,session){
 
 			df  <- data.frame(df$REG,df$famille,df$typo_B,df[,getIndexCol("nb_etab",df)])
 			colnames(df)  <- c("REG","famille","typo_B","nb_etab")
-			new_dat  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric())
+			new_dat  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
 				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
 				for (row in 1:nrow(tmp)){
-					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 				}
 			new_dat  <- rbind(new_dat,tmp)
 			}
@@ -520,12 +528,12 @@ server <- function(input,output,session){
 			colnames(first_part)  <- c("DEP","famille","typo_A","nb_etab")
 
 
-			first_part_bis  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric())
+			first_part_bis  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
 				tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),"nb_etab"]
 				for (row in 1:nrow(tmp)){
-					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -542,12 +550,12 @@ server <- function(input,output,session){
 			df$DEP =rep(nom_DEP,nrow(df))
 			df  <- data.frame(df$DEP,df$famille,df$typo_A,df[,getIndexCol("nb_etab",df)])
 			colnames(df)  <- c("DEP","famille","typo_A","nb_etab")
-			new_dat  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric())
+			new_dat  <-  data.frame("DEP"=character(),"famille"=character(),"typo_A"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
 				tot  <- tmp[which(tmp$typo_A=="Ensemble des secteurs d'activité"),"nb_etab"]
 				for (row in 1:nrow(tmp)){
-					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 				}
 				new_dat  <- rbind(new_dat,tmp)
 			}
@@ -587,13 +595,13 @@ server <- function(input,output,session){
 
 			df  <- data.frame(df$nom_complet,df$jurid2,df$typo1,df[,getIndexCol("nb_etab",df)])
 			colnames(df)  <- c("EPCI","famille","typo1","nb_etab")
-			new_dat  <-  data.frame("EPCI"=character(),"famille"=character(),"typo1"=character(),"var"=numeric())
+			new_dat  <-  data.frame("EPCI"=character(),"famille"=character(),"typo1"=character(),"var"=numeric(),"prct"=numeric())
 
 			for(fam in df$famille%>%unique ){
 				tmp  <- df%>% filter(famille==fam)
 				tot  <- tmp[which(tmp$typo1=="TOUS SECTEURS"),"nb_etab"]
 				for (row in 1:nrow(tmp)){
-					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 				}
 				new_dat  <- rbind(new_dat,tmp)
 			}
@@ -619,6 +627,12 @@ server <- function(input,output,session){
 			df  <-  df%>% filter(famille==input$select_ESS_tabs2_part1)%>% select(-EPCI,-famille)
 
 		}
+		if(input$prct_part1){
+			df  <-  df[,-getIndexCol("nb_etab",df)]
+		}else{
+			df  <-  df %>% select(-prct)
+		}
+
 
 		colnames(df) <- c("country","value")
 		
@@ -684,12 +698,12 @@ server <- function(input,output,session){
 			colnames(first_part)  <- c("REG","famille","typo_B","nb_etab")
 
 
-			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric())
+			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"typo_B"=character(),"var"=numeric(),"prct"=numeric())
 			for(fam in first_part$famille%>%unique ){
 				tmp  <- first_part%>% filter(famille==fam)
 				tot  <- tmp[which(tmp$typo_B=="Ensemble des secteurs d'activité"),"nb_etab"]
 				for (row in 1:nrow(tmp)){
-					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 				}
 				first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -702,8 +716,14 @@ server <- function(input,output,session){
 			
 			first_part_bis  <- first_part_bis %>% filter(typo_B!="Ensemble des secteurs d'activité")
 			first_part_bis  <- 	first_part_bis %>% filter(famille==ESS_filtre)
-			df  <- data.frame(first_part_bis$typo_B,first_part_bis[,getIndexCol("nb_etab",first_part_bis)])
+			df  <- data.frame(first_part_bis$typo_B,first_part_bis[,getIndexCol("nb_etab",first_part_bis)],first_part_bis$prct)
+			colnames(df)  <- c("typo_B","nb_etab","prct")
 
+		}
+		if(input$prct_part1){
+			df  <-  df[,-getIndexCol("nb_etab",df)]
+		}else{
+			df  <-  df %>% select(-prct)
 		}
 
 		colnames(df) <- c("country","value")
@@ -829,12 +849,12 @@ server <- function(input,output,session){
 			colnames(first_part)  <- c("REG","ESS","famille","nb_etab")
 
 
-			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in first_part$ESS%>%unique ){
 					tmp  <- first_part%>% filter(ESS==ESS_val)
 					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
 					for (row in 1:nrow(tmp)){
-						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 					}
 					first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -862,12 +882,12 @@ server <- function(input,output,session){
 
 			colnames(df)  <- c("REG","ESS","famille","nb_etab")
 
-			new_data  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			new_data  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in df$ESS%>%unique ){
 				tmp  <- df%>% filter(ESS==ESS_val)
 				tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
 				for (row in 1:nrow(tmp)){
-					tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 				}
 				new_data  <- rbind(new_data,tmp)
 			}
@@ -901,12 +921,12 @@ server <- function(input,output,session){
 
 			colnames(first_part)  <- c("DEP","ESS","famille","nb_etab")
 
-			first_part_bis  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			first_part_bis  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in first_part$ESS%>%unique ){
 					tmp  <- first_part%>% filter(ESS==ESS_val)
 					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
 					for (row in 1:nrow(tmp)){
-						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 					}
 					first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -931,12 +951,12 @@ server <- function(input,output,session){
 			colnames(df)  <- c("DEP","ESS","famille","nb_etab")
 			df$DEP  <- rep(nom_DEP,nrow(df))
 
-			new_data  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			new_data  <-  data.frame("DEP"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in df$ESS%>%unique ){
 					tmp  <- df%>% filter(ESS==ESS_val)
 					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
 					for (row in 1:nrow(tmp)){
-						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 					}
 					new_data  <- rbind(new_data,tmp)
 			}
@@ -957,14 +977,15 @@ server <- function(input,output,session){
 				df$jurid1[i]  <- splitted[2]
 			}
 
-			df  <-  data.frame(df$nom_complet,df$jurid1,df[,getIndexCol("nb_etab",df)])
+			prct=rep(NA,nrow(df))
+			df  <-  data.frame(df$nom_complet,df$jurid1,df[,getIndexCol("nb_etab",df)],prct)
 
-			colnames(df) <- c("EPCI","famille","nb_etab")
+			colnames(df) <- c("EPCI","famille","nb_etab","prct")
 
 
 			tot  <- df[which(df$famille=="TOTAL"),"nb_etab"]
 			for (row in 1:nrow(df)){
-				df[row,getIndexCol("nb_etab",df)] <- round(df[row,getIndexCol("nb_etab",df)] /tot,2)*100
+				df[row,"prct"] <- round(df[row,getIndexCol("nb_etab",df)] /tot,2)*100
 			}
 			data  <- df
 
@@ -994,6 +1015,11 @@ server <- function(input,output,session){
 		}else{
 
 			df  <- df %>% filter(famille!="TOTAL")%>% select(-EPCI)
+		}
+		if(input$prct_part2){
+			df  <- df[,-getIndexCol("nb_etab",df)]
+		}else{
+			df  <- df%>%select(-prct)
 		}
 		colnames(df) <- c("country","value")
 		
@@ -1054,12 +1080,12 @@ server <- function(input,output,session){
 			colnames(first_part)  <- c("REG","ESS","famille","nb_etab")
 
 
-			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric())
+			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"famille"=character(),"var"=numeric(),"prct"=numeric())
 			for(ESS_val in first_part$ESS%>%unique ){
 					tmp  <- first_part%>% filter(ESS==ESS_val)
 					tot  <- tmp[which(tmp$famille=="Ensemble"),"nb_etab"]
 					for (row in 1:nrow(tmp)){
-						tmp[row,getIndexCol("nb_etab",tmp)] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+						tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
 					}
 					first_part_bis  <- rbind(first_part_bis,tmp)
 			}
@@ -1073,6 +1099,12 @@ server <- function(input,output,session){
 
 			first_part_bis  <- first_part_bis %>% filter (ESS==filter_ESS)
 			df  <- first_part_bis %>% select(-REG,-ESS) %>% filter(famille !="Ensemble")
+			
+			if(input$prct_part2){
+				df  <- df[,-getIndexCol("nb_etab",df)]
+			}else{
+				df  <-  df %>% select(-prct)
+			}
 			colnames(df)  <-  c("country","value")
 
 			df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
@@ -1124,6 +1156,287 @@ server <- function(input,output,session){
 		}
 		updateSelectInput(session,"select_scale_det_tabs2_part2",choices=choice)
 	})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	#-------------------------------------------
+	#
+	#    TABS2 - PART3
+	#
+	#-------------------------------------------
+
+	data_tabs2_part3  <- reactive({
+		year  <- input$select_year_tabs2_part3
+		scale  <-  input$select_scale_tabs2_part3
+		id_table  <- ""
+		if(scale=="REG"){
+			id_table  <- "TC14.csv"
+
+		}else if(scale=="DEP"){
+
+			id_table  <- "TC2.csv"
+		}
+		PATH  <- paste("outputs/",year,"/",id_table,sep="") 
+		df <- tables[[PATH]]
+		if(scale =="REG"){
+
+			pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+			colnames(pattern)  <-  c("ESS","famille")
+			patterns  <- paste(pattern$ESS,pattern$famille,sep="")
+
+
+			first_part  <-df%>% filter(REG=="France entière")
+
+			first_part  <- first_part %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+
+			first_part[which(first_part$famille=="Ensemble"),]$famille   <-  "ESS"
+			for (i in 1:nrow(first_part)){
+				splitted  <- strsplit(first_part$taille_etab[i],"- ")[[1]]
+				if(length(splitted)==1){
+					first_part$taille_etab[i]  <- splitted[1]
+				}else{
+					first_part$taille_etab[i]  <- splitted[2]
+				}
+			}
+
+
+			first_part  <- data.frame(first_part$REG,first_part$famille,first_part$taille_etab,first_part[,getIndexCol("nb_etab",first_part)])
+
+			colnames(first_part)  <- c("REG","famille","taille_etab","nb_etab")
+
+
+			first_part_bis  <-  data.frame("REG"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+			for(fam in first_part$famille%>%unique ){
+				tmp  <- first_part%>% filter(famille==fam)
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				first_part_bis  <- rbind(first_part_bis,tmp)
+			}
+
+
+
+
+			df  <- df %>% filter(REG=="Grand-Est"  )
+			df  <- df %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+			df[which(df$famille=="Ensemble"),]$famille   <-  "ESS"
+			for (i in 1:nrow(df)){
+				splitted  <- strsplit(df$taille_etab[i],"- ")[[1]]
+				if(length(splitted)==1){
+					df$taille_etab[i]  <- splitted[1]
+				}else{
+					df$taille_etab[i]  <- splitted[2]
+				}
+			}
+
+
+			df  <- data.frame(df$REG,df$famille,df$taille_etab,df[,getIndexCol("nb_etab",df)])
+			colnames(df)  <- c("REG","famille","taille_etab","nb_etab")
+			new_dat  <-  data.frame("REG"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+			for(fam in df$famille%>%unique ){
+				tmp  <- df%>% filter(famille==fam)
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				new_dat  <- rbind(new_dat,tmp)
+			}
+
+			data  <- rbind(new_dat,first_part_bis)
+		}else if(scale=="DEP"){
+			nom_DEP  <-  input$select_scale_det_tabs2_part3
+
+
+			code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
+			code  <- code[[1]]
+
+
+			pattern  <- rbind(c("ESS","Ensemble"),c("Hors ESS","Public"),c("Hors ESS","Privé Hors ESS"))%>% data.frame
+			colnames(pattern)  <-  c("ESS","famille")
+			patterns  <- paste(pattern$ESS,pattern$famille,sep="")
+
+
+			first_part  <-df%>% filter(DEP=="France entière")
+
+			first_part  <- first_part %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+
+			first_part[which(first_part$famille=="Ensemble"),]$famille   <-  "ESS"
+			for (i in 1:nrow(first_part)){
+				splitted  <- strsplit(first_part$taille_etab[i],"- ")[[1]]
+				if(length(splitted)==1){
+					first_part$taille_etab[i]  <- splitted[1]
+				}else{
+					first_part$taille_etab[i]  <- splitted[2]
+				}
+			}
+
+
+			first_part  <- data.frame(first_part$DEP,first_part$famille,first_part$taille_etab,first_part[,getIndexCol("nb_etab",first_part)])
+
+			colnames(first_part)  <- c("DEP","famille","taille_etab","nb_etab")
+
+
+			first_part_bis  <-  data.frame("DEP"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+			for(fam in first_part$famille%>%unique ){
+				tmp  <- first_part%>% filter(famille==fam)
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				first_part_bis  <- rbind(first_part_bis,tmp)
+			}
+
+
+
+
+			df  <- df %>% filter(as.numeric(DEP)==as.numeric(code)  )
+			df  <- df %>%filter(paste(ESS,famille,sep="") %in% patterns)  
+			df[which(df$famille=="Ensemble"),]$famille   <-  "ESS"
+			for (i in 1:nrow(df)){
+				splitted  <- strsplit(df$taille_etab[i],"- ")[[1]]
+				if(length(splitted)==1){
+					df$taille_etab[i]  <- splitted[1]
+				}else{
+					df$taille_etab[i]  <- splitted[2]
+				}
+			}
+			df$DEP  <- rep(nom_DEP,nrow(df))
+
+			df  <- data.frame(df$DEP,df$famille,df$taille_etab,df[,getIndexCol("nb_etab",df)])
+			colnames(df)  <- c("DEP","famille","taille_etab","nb_etab")
+			new_dat  <-  data.frame("DEP"=character(),"famille"=character(),"taille_etab"=character(),"var"=numeric(),"prct"=numeric())
+			for(fam in df$famille%>%unique ){
+				tmp  <- df%>% filter(famille==fam)
+				tot  <- tmp[which(tmp$taille_etab=="Toutes entreprises"),"nb_etab"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,"prct"] <- round(tmp[row,getIndexCol("nb_etab",tmp)] /tot,2)*100
+				}
+				new_dat  <- rbind(new_dat,tmp)
+			}
+			data  <- rbind(new_dat,first_part_bis)
+		}
+		return(data)
+
+
+	})
+
+
+
+
+	output$plot_tabs2_part3_1  <- renderD3({
+		df  <- data_tabs2_part3()
+
+		if(input$select_scale_tabs2_part3 =="REG"){
+			
+
+			df  <- df %>% filter(REG==input$select_scale_det_tabs2_part3 & famille==input$select_ESS_tabs2_part3 & taille_etab !="Toutes entreprises")%>% select(-REG,-famille)
+
+		
+		}else if(input$select_scale_tabs2_part3 =="DEP"){
+
+			df  <- df %>%filter(DEP==input$select_scale_det_tabs2_part3 & famille==input$select_ESS_tabs2_part3 & taille_etab !="Toutes entreprises")%>% select(-DEP,-famille)
+		}
+
+		if(input$prct_part3){
+
+			df  <- data.frame(df$taille_etab,df$prct)
+		}else{
+			df  <- data.frame(df$taille_etab,df[,getIndexCol("nb_etab",df)])
+		}
+		colnames(df) <- c("country","value")
+		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+		r2d3(
+			 data=df,
+
+			 script="www/assets/barplot_classic.js",
+			 options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
+						  var_name="Nombre établissements",
+						  short_var_name="étab",
+						  year=input$select_year_nb_etab
+
+			 )
+		)
+
+	})
+	output$plot_tabs2_part3_2  <- renderD3({
+
+		df  <- data_tabs2_part3()
+
+		if(input$select_scale_tabs2_part3 =="REG"){
+			
+
+			df  <- df %>% filter(REG=="France entière" & famille==input$select_ESS_tabs2_part3 & taille_etab !="Toutes entreprises")%>% select(-REG,-famille)
+
+		
+		}else if(input$select_scale_tabs2_part3 =="DEP"){
+
+			df  <- df %>%filter(DEP=="France entière" & famille==input$select_ESS_tabs2_part3 & taille_etab !="Toutes entreprises")%>% select(-DEP,-famille)
+		}
+
+		if(input$prct_part3){
+
+			df  <- data.frame(df$taille_etab,df$prct)
+		}else{
+			df  <- data.frame(df$taille_etab,df[,getIndexCol("nb_etab",df)])
+		}
+		colnames(df) <- c("country","value")
+		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+		r2d3(
+			 data=df,
+
+			 script="www/assets/barplot_classic.js",
+			 options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
+						  var_name="Nombre établissements",
+						  short_var_name="étab",
+						  year=input$select_year_nb_etab
+
+			 )
+		)
+	})
+
+
+
+
+
+
+
+
+	observe({
+		if(input$select_scale_tabs2_part3=="REG"){
+			choice=c("ESS","Privé Hors ESS","Public")
+		}else{
+			choice=c("ESS","Public","Privé Hors ESS")
+		}
+		updateSelectInput(session,"select_ESS_tabs2_part3",choices=choice)
+	})
+
+
+	observe({
+		if(input$select_scale_tabs2_part3=="REG"){
+			choice=c(overAll_filter_REG)
+		}else if(input$select_scale_tabs2_part3=="DEP"){
+			choice=available_DEP$nom
+
+		}
+		updateSelectInput(session,"select_scale_det_tabs2_part3",choices=choice)
+	})
+
 	
 
 
@@ -1159,7 +1472,15 @@ shinyApp(
 		select_ESS_tabs2_part2=construct_select_box(c("ESS","ESS + Hors ESS"),"select_ESS_tabs2_part2"),
 		select_scale_det_tabs2_part2=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part2"),
 		plot_tabs2_part2_1= plot_tabs2_part2_1,
-		plot_tabs2_part2_2 = plot_tabs2_part2_2
+		plot_tabs2_part2_2 = plot_tabs2_part2_2,
+		#--------------------------------
+		# TABS2 - PART3
+
+		select_ESS_tabs2_part3=construct_select_box(c("ESS","Privé Hors ESS","Public"),"select_ESS_tabs2_part3"),
+		select_year_tabs2_part3=select_year_tabs2_part3,
+		select_scale_det_tabs2_part3=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part3"),
+		plot_tabs2_part3_1=plot_tabs2_part3_1,
+		plot_tabs2_part3_2=plot_tabs2_part3_2
         ),
     server = server
 )

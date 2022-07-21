@@ -141,6 +141,8 @@
 
 							{{select_ESS_tabs2_part1}}
 							{{select_scale_det_tabs2_part1}}
+							<input type="checkbox" id="prct_part1">
+							<label style="font-size:15px; font-weight:bold;" for="prct">Afficher en %</label>
 						</div>
 						<div id="div-plot-tabs2-part1_1">
 							{{plot_tabs2_part1_1}}
@@ -164,6 +166,8 @@
 							</select>
 							{{select_ESS_tabs2_part2}}
 							{{select_scale_det_tabs2_part2}}
+							<input type="checkbox" id="prct_part2">
+							<label style="font-size:15px; font-weight:bold;" for="prct">Afficher en %</label>
 						</div>
 						<div id="div-plot-tabs2-part2_1">
 							{{plot_tabs2_part2_1}}
@@ -177,6 +181,29 @@
 
 					<div id="part3-tabs2" class="tabs2-part">
 
+						<span> Taille des etablissement de l'ESS en région Grand-Est</span>
+						<div id="select-boxes-tabs2-part3">
+
+
+							{{select_year_tabs2_part3}}
+							<select  id="select_scale_tabs2_part3" class="select_box_custom">
+								<option value="REG">Régionale</option>
+								<option value="DEP">Départementale</option>
+							</select>
+							{{select_ESS_tabs2_part3}}
+							{{select_scale_det_tabs2_part3}}
+							<input type="checkbox" id="prct_part3">
+							<label style="font-size:15px; font-weight:bold;" for="prct">Afficher en %</label>
+						</div>
+						<div id="div-plot-tabs2-part3_1">
+
+							{{plot_tabs2_part3_1}}
+						</div>
+						
+						<div id="div-plot-tabs2-part3_2">
+
+							{{plot_tabs2_part3_2}}
+						</div>
 					</div>
 				</div>		
 			</div>
