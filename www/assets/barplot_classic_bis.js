@@ -76,7 +76,7 @@ svg.selectAll("myBar")
    .attr("fill","#6dc5fb")
    .attr("height",d=>height-margin.bottom-y(0))
    .attr("y",y(0))
-   .append("title").text(d=>`${d.country}s :${d.value} ${short_var_name} en `+year);
+   .append("title").text(d=>`${d.country} :${d.value} ${short_var_name} en `+year);
 
 
 
