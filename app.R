@@ -21,11 +21,11 @@ getIndexCol  <- function(var_lab,data){
 	return(which(colnames(data)==var_lab))
 }
 var_to_title  <- list(
-					  "nb_etab"="Nombre d'établissements",
-					  "eff_31"="Les effectifs aux 31/12/",
-					  "eff_EQTP"="Les effectifs equivalents temps plein",
-					  "nb_ent"="Nombre d'entreprises",
-					  "rem_brut"="Les rémunérations brutes"
+					  "nb_etab"="nombre d'établissements",
+					  "eff_31"="nombre effectifs aux 31/12/",
+					  "eff_EQTP"="nombre d'effectifs equivalents temps plein",
+					  "nb_ent"="nombre d'entreprises",
+					  "rem_brut"="montants des rémunérations brutes"
 )
 
 var_to_short  <-  list(
@@ -161,7 +161,8 @@ plot_tabs2_part2_1 =d3Output("plot_tabs2_part2_1",height = "100%",width="90%")
 plot_tabs2_part2_2 =d3Output("plot_tabs2_part2_2",height = "100%",width="90%")
 plot_tabs2_part3_1 =d3Output("plot_tabs2_part3_1",height = "100%",width="90%")
 plot_tabs2_part3_2 =d3Output("plot_tabs2_part3_2",height = "100%",width="90%")
-
+plot_tabs2_part4_1 =d3Output("plot_tabs2_part4_1",height = "100%",width="90%")
+plot_tabs2_part4_2 =d3Output("plot_tabs2_part4_2",height = "100%",width="90%")
 
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
@@ -181,6 +182,7 @@ select_year_tabs2_part2=HTML(paste('<select id="select_year_tabs2_part2" class="
 
 select_year_tabs2_part3=HTML(paste('<select id="select_year_tabs2_part3" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
 
+select_year_tabs2_part4=HTML(paste('<select id="select_year_tabs2_part4" class="select_box_custom">',selectbox_HTML,'</select>',sep=""))
 select_scale_det_REG= construct_select_box(c(overAll_filter_REG),"select_scale_det")
 DEP_GE=c("08","10","51","52","54","55","57","67","68","88")
 
@@ -318,11 +320,9 @@ server <- function(input,output,session){
 		}
 
         PATH = paste("outputs/",year,"/",nameTable,sep="")
-		print(PATH)
 		
 		df  <- tables[[PATH]]
 
-		print(scale)
 		if(scale=="REG"){
 			
 			first_part  <- df %>%filter( REG== "Grand-Est" & famille=="Ensemble"  & ESS=="ESS" & typo_B=="Ensemble des secteurs d'activité" & typo_B_det=="Ensemble") %>% select(-typo_B,-typo_B_det,-famille,-ESS)
@@ -411,16 +411,38 @@ server <- function(input,output,session){
 	output$plot_tabs2_head  <- renderPlot({
 		df  <- data_tabs2_head()
 		colnames(df)  <-  c("country","value")
-		print(df)
 		varLab  <- input$select_var_tabs2_head
+		title_subpart_1  <- ""
+		scale  <- input$select_scale_tabs2_head
+		if(scale=="REG"){
+			title_subpart_1  <- paste(var_to_title[[varLab ]],"sur l'ensemble des régions francaises")
+		}else if(scale=="DEP"){
+
+			title_subpart_1  <- paste(var_to_title[[varLab ]],"sur l'ensemble des départements de Grand Est")
+		}else{
+
+			title_subpart_1  <- paste(var_to_title[[varLab ]],"sur l'ensemble des EPCI de Grand Est")
+		}
+
+		title_subpart_2  <- ""
+		scale  <- input$select_scale_tabs2_head
+		if(scale=="REG"){
+			title_subpart_2  <- "régions"
+		}else if(scale=="DEP"){
+
+			title_subpart_2  <- "départements"
+		}else{
+
+			title_subpart_1  <- "EPCI"
+		}
 		
-		g  <- ggplot(df,aes(country,value,fill=country))
-		g  <- g+ geom_col()+
+		g  <- ggplot(df,aes(country,value))
+		g  <- g+ geom_col("fill"="#6dc5fb")+
 			xlab(" Régions/Moyenne")+
 			ylab(var_to_short[[varLab]])+
-			ggtitle(paste(var_to_title[[varLab]],"en",input$select_scale_det_tabs2_head,"(",input$select_year,")",sep=" "))+
+			ggtitle(paste(var_to_title[[varLab]],"en",input$select_scale_det_tabs2_head,"comparé à la moyenne du",title_subpart_1,"et au 3 plus importants",title_subpart_2,"","(",input$select_year_tabs2_head,")",sep=" "))+
 			guides(fill="none")+
-			scale_fill_hue()+ theme (axis.text.x=element_text(face="bold",size=10,angle=90))
+			scale_fill_hue()+ theme (axis.text.x=element_text(face="bold",size=13,angle=50),plot.background = element_rect(fill = "#D7F5FF"),panel.background = element_rect(fill =  "#D7F5FF"))
 
 		return(g)
 	})
@@ -683,16 +705,29 @@ server <- function(input,output,session){
 
 		colnames(df) <- c("country","value")
 		
+		for(row in 1:nrow(df)){
+			if(is.na(df$value[row])){
+				df$country[row]  <- paste(df$country[row],"*",sep="")
+			}
+		}
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+		if(input$prct_part1){
+			var_name_plot = paste(var_to_short[[varLab]],"(%)",sep="")
+			var_name_plot_sub="%"
+		}else{
+			var_name_plot=var_to_short[[varLab]]
+			var_name_plot_sub=var_to_short[[varLab]]
+		}
 		r2d3(
 			 data=df,
 
-			 script="www/assets/barplot_classic.js",
+			 script="www/assets/barplot_classic_bis.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste(var_to_title[[varLab]],"par secteur d'activité","en",input$select_scale_det_tabs2_part1,"(",input$select_year_tabs2_part1,")",sep=" "),
-						  var_name=var_to_short[[varLab]],
-						  short_var_name=var_to_short[[varLab]],
+						  title=paste("Répartition du",var_to_title[[varLab]],"par secteur d'activité","en",input$select_scale_det_tabs2_part1,"(",input$select_year_tabs2_part1,")",sep=" "),
+						  var_name=var_to_title[[varLab]],
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
 						  year=input$select_year_tabs2_part1
 
 			 )
@@ -775,17 +810,30 @@ server <- function(input,output,session){
 		}
 
 		colnames(df) <- c("country","value")
+		if(input$prct_part1){
+			var_name_plot = paste(var_to_short[[varLab]],"(%)",sep="")
+			var_name_plot_sub="%"
+		}else{
+			var_name_plot=var_to_short[[varLab]]
+			var_name_plot_sub=var_to_short[[varLab]]
+		}
+		for(row in 1:nrow(df)){
+			if(is.na(df$value[row])){
+				df$country[row]  <- paste(df$country[row],"*",sep="")
+			}
+		}
 		
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 		r2d3(
 			 data=df,
 
-			 script="www/assets/barplot_classic.js",
+			 script="www/assets/barplot_classic_bis.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste(var_to_title[[varLab]],"par secteur d'activité","en France",input$select_scale_det_tabs2_part1,"(",input$select_year_tabs2_part1,")",sep=" "),
-						  var_name=var_to_short[[varLab]],
-						  short_var_name=var_to_short[[varLab]],
+						  title=paste(var_to_title[[varLab]],"par secteur d'activité","en France","(",input$select_year_tabs2_part1,")",sep=" "),
+						  var_name=var_name_plot,
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
 						  year=input$select_year_tabs2_part1
 
 			 )
@@ -1083,6 +1131,19 @@ server <- function(input,output,session){
 			df  <- df%>%select(-prct)
 		}
 		colnames(df) <- c("country","value")
+
+		if(input$prct_part2){
+			var_name_plot = paste(var_to_short[[varLab]],"(%)",sep="")
+			var_name_plot_sub="%"
+		}else{
+			var_name_plot=var_to_short[[varLab]]
+			var_name_plot_sub=var_to_short[[varLab]]
+		}
+		for(row in 1:nrow(df)){
+			if(is.na(df$value[row])){
+				df$country[row]  <- paste(df$country[row],"*",sep="")
+			}
+		}
 		
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 		r2d3(
@@ -1091,9 +1152,10 @@ server <- function(input,output,session){
 			 script="www/assets/barplot_classic.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
-						  var_name="Nombre établissements",
-						  short_var_name="étab",
+						  title=paste("Répartition du",var_to_title[[varLab]],"en",input$select_scale_det_tabs2_part2,"par familles juridiques (", input$select_year_tabs2_part2,")",sep=" "),
+						  var_name=var_name_plot,
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
 						  year=input$select_year_tabs2_part2
 
 			 )
@@ -1164,11 +1226,20 @@ server <- function(input,output,session){
 			
 			if(input$prct_part2){
 				df  <- df[,-getIndexCol(varLab,df)]
+				var_name_plot= paste(var_to_short[[varLab]],"(%)",sep="")
+				var_name_plot_sub="%"
 			}else{
 				df  <-  df %>% select(-prct)
+				var_name_plot =var_to_short[[varLab]]
+				var_name_plot_sub=var_to_short[[varLab]]
 			}
 			colnames(df)  <-  c("country","value")
 
+			for(row in 1:nrow(df)){
+				if(is.na(df$value[row])){
+					df$country[row]  <- paste(df$country[row],"*",sep="")
+				}
+			}
 			df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 			r2d3(
 				 data=df,
@@ -1176,9 +1247,10 @@ server <- function(input,output,session){
 				script="www/assets/barplot_classic.js",
 				options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
-						  var_name="Nombre établissements",
-						  short_var_name="étab",
+						  title=paste("Répartition du",var_to_title[[varLab]],"en France par familles juridiques (",input$select_year_tabs2_part2,")",sep=" "),
+						  var_name=var_to_title[[varLab]],
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
 						  year=input$select_year_tabs2_part2
 
 			 )
@@ -1425,10 +1497,20 @@ server <- function(input,output,session){
 		if(input$prct_part3){
 
 			df  <- data.frame(df$taille_etab,df$prct)
+				var_name_plot= paste(var_to_short[[varLab]],"(%)",sep="")
+				var_name_plot_sub="%"
 		}else{
 			df  <- data.frame(df$taille_etab,df[,getIndexCol(varLab,df)])
+				var_name_plot =var_to_short[[varLab]]
+				var_name_plot_sub=var_to_short[[varLab]]
 		}
 		colnames(df) <- c("country","value")
+		for(row in 1:nrow(df)){
+			if(is.na(df$value[row])){
+				
+				df$country[row]  <- paste(df$country[row],"*",sep="")
+			}
+		}
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 		r2d3(
 			 data=df,
@@ -1436,9 +1518,10 @@ server <- function(input,output,session){
 			 script="www/assets/barplot_classic.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
+						  title=paste("Répartition du",var_to_title[[varLab]],"par taille d'établissements en",input$select_scale_det_tabs2_part3,"(",input$select_year_tabs2_part3,")",sep=" "),
 						  var_name="Nombre établissements",
-						  short_var_name="étab",
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
 						  year=input$select_year_tabs2_part3
 
 			 )
@@ -1468,10 +1551,20 @@ server <- function(input,output,session){
 		if(input$prct_part3){
 
 			df  <- data.frame(df$taille_etab,df$prct)
+			var_name_plot = paste(var_to_short[[varLab]],"(%)",sep="")
+			var_name_plot_sub="%"
 		}else{
 			df  <- data.frame(df$taille_etab,df[,getIndexCol(varLab,df)])
+			var_name_plot=var_to_short[[varLab]]
+			var_name_plot_sub=var_to_short[[varLab]]
 		}
 		colnames(df) <- c("country","value")
+		
+		for(row in 1:nrow(df)){
+			if(is.na(df$value[row])){
+				df$country[row]  <- paste(df$country[row],"*",sep="")
+			}
+		}
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 		r2d3(
 			 data=df,
@@ -1479,9 +1572,10 @@ server <- function(input,output,session){
 			 script="www/assets/barplot_classic.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Nombre Etablissement",input$select_year_tabs2_part2,sep=" "),
-						  var_name="Nombre établissements",
-						  short_var_name="étab",
+						  title=paste("Répartition du",var_to_title[[varLab]],"par taille d'entreprises en France","(",input$select_year_tabs2_part2,")",sep=" "),
+						  var_name=var_to_title[[varLab]],
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
 						  year=input$select_year_tabs2_part3
 
 			 )
@@ -1527,7 +1621,229 @@ server <- function(input,output,session){
 													 }
 	)
 
+
+
+
+	#-------------------------------------------
+	#
+	#    TABS2 - PART4
+	#
+	#-------------------------------------------
+
 	
+	data_tabs2_part4  <- reactive({
+		
+		year  <- input$select_year_tabs2_part4
+		scale  <-  input$select_scale_tabs2_part4
+		varLab  <-  input$select_var_tabs2_part4
+		id_table  <- ""
+		if(scale=="REG"){
+			id_table  <- "TC16.csv"
+
+		}else if(scale=="DEP"){
+
+			id_table  <- "TC4.csv"
+		}
+		PATH  <- paste("outputs/",year,"/",id_table,sep="") 
+		df <- tables[[PATH]]
+		if(scale=="REG"){
+			df<- df%>% filter( 
+				tolower(famille)=="ensemble" &
+				tolower(type_emploi)=="ensemble") %>% select(-famille,-type_emploi) 
+			first_part  <- df%>%filter(REG=="France entière")
+
+			first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+
+		for(fam in first_part$ESS%>%unique ){
+			tmp  <- first_part%>% filter(ESS==fam)
+			tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+			for (row in 1:nrow(tmp)){
+				tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+			}
+			first_part_bis  <- rbind(first_part_bis,tmp)
+		}
+
+		df  <- df %>% filter(REG=="Grand-Est")
+		new_dat  <-  data.frame("REG"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+		for(fam in df$ESS%>%unique ){
+			tmp  <- df%>% filter(ESS==fam)
+			tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+			for (row in 1:nrow(tmp)){
+				tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+			}
+			new_dat  <- rbind(new_dat,tmp)
+		}
+
+		data  <- rbind(new_dat,first_part_bis)
+
+		}else{
+
+			nom_DEP  <- input$select_scale_det_tabs2_part4
+
+			code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
+			code  <- code[[1]]
+			df<- df%>% filter( 
+				tolower(famille)=="ensemble" &
+				tolower(type_emploi)=="ensemble") %>% select(-famille,-type_emploi) 
+			first_part  <- df%>%filter(DEP=="France entière")
+
+			first_part_bis  <-  data.frame("DEP"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+
+			for(fam in first_part$ESS%>%unique ){
+				tmp  <- first_part%>% filter(ESS==fam)
+				tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+				}
+				first_part_bis  <- rbind(first_part_bis,tmp)
+			}
+
+			df  <- df %>% filter(as.numeric(DEP)==as.numeric(code))
+			df$DEP   <- rep(nom_DEP,nrow(df))
+			new_dat  <-  data.frame("DEP"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+			for(fam in df$ESS%>%unique ){
+				tmp  <- df%>% filter(ESS==fam)
+				tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+				for (row in 1:nrow(tmp)){
+					tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+				}
+			new_dat  <- rbind(new_dat,tmp)
+			}
+
+			data  <- rbind(new_dat,first_part_bis)
+
+		}
+		return(data)
+
+
+
+
+	})
+
+
+
+
+
+
+	output$plot_tabs2_part4_1  <- renderD3({
+		df  <- data_tabs2_part4()
+		df  <- df %>% filter(ESS==input$select_ESS_tabs2_part4 & sexe!="Ensemble")
+		scale  <- input$select_scale_tabs2_part4
+		if(scale=="REG"){
+			df  <-  df %>% filter(REG==input$select_scale_det_tabs2_part4)%>%select(-REG,-ESS)
+		}else{
+			df  <-  df %>% filter(DEP==input$select_scale_det_tabs2_part4)%>%select(-DEP,-ESS)
+
+		}
+
+		if(input$prct_part4){
+
+			df  <- data.frame(df$sexe,df$prct)
+				var_name_plot= paste("nb poste","(%)",sep="")
+				var_name_plot_sub="%"
+		}else{
+			df  <- data.frame(df$sexe,df$nb_poste)
+				var_name_plot ="nb poste"
+				var_name_plot_sub="postes"
+		}
+		colnames(df) <- c("country","value")
+		for(row in 1:nrow(df)){
+			if(is.na(df$value[row])){
+				
+				df$country[row]  <- paste(df$country[row],"*",sep="")
+			}
+		}
+		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+		r2d3(
+			 data=df,
+
+			 script="www/assets/barplot_classic.js",
+			 options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Répartition Homme Femmes des postes au sein de :",input$select_ESS_tabs2_part4,"en",input$select_scale_det_tabs2_part3,"(",input$select_year_tabs2_part4,")",sep=" "),
+						  var_name="Nombre établissements",
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
+						  year=input$select_year_tabs2_part4
+
+			 )
+		)
+
+
+	})
+
+	output$plot_tabs2_part4_2  <- renderD3({
+		df  <- data_tabs2_part4()
+		df  <- df %>% filter(ESS==input$select_ESS_tabs2_part4 & sexe!="Ensemble")
+		scale  <- input$select_scale_tabs2_part4
+		if(scale=="REG"){
+			df  <-  df %>% filter(REG=="France entière")%>%select(-REG,-ESS)
+		}else{
+			df  <-  df %>% filter(DEP=="France entière")%>%select(-DEP,-ESS)
+
+		}
+
+		if(input$prct_part4){
+
+			df  <- data.frame(df$sexe,df$prct)
+				var_name_plot= paste("nb poste","(%)",sep="")
+				var_name_plot_sub="%"
+		}else{
+			df  <- data.frame(df$sexe,df$nb_poste)
+				var_name_plot ="nb poste"
+				var_name_plot_sub="postes"
+		}
+		colnames(df) <- c("country","value")
+		for(row in 1:nrow(df)){
+			if(is.na(df$value[row])){
+				
+				df$country[row]  <- paste(df$country[row],"*",sep="")
+			}
+		}
+		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
+		r2d3(
+			 data=df,
+
+			 script="www/assets/barplot_classic.js",
+			 options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Répartition Homme Femmes des postes au sein de :",input$select_ESS_tabs2_part4,"sur la France","(",input$select_year_tabs2_part4,")",sep=" "),
+						  var_name="Nombre établissements",
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
+						  year=input$select_year_tabs2_part4
+
+			 )
+		)
+
+
+	})
+
+
+
+
+	observe({
+		if(input$select_scale_tabs2_part4=="REG"){
+			choice=c(overAll_filter_REG)
+		}else if(input$select_scale_tabs2_part4=="DEP"){
+			choice=available_DEP$nom
+
+		}
+		updateSelectInput(session,"select_scale_det_tabs2_part4",choices=choice)
+	})
+
+
+
+	output$export_csv_tab2_part4  <- downloadHandler(
+													 filename=function(){
+														 paste("Repartition","nb_poste",input$select_year_tabs2_part4,"par_sexe_scale=",input$select_scale_det_tabs2_part4,".csv",sep="")
+
+													 },
+													 content = function(file){
+														 write.csv(data_tabs2_part4(),file,row.names= FALSE,fileEncoding="latin1")
+													 }
+	)
+
 
 
 
@@ -1573,7 +1889,16 @@ shinyApp(
 		select_scale_det_tabs2_part3=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part3"),
 		plot_tabs2_part3_1=plot_tabs2_part3_1,
 		export_csv_tab2_part3=downloadButton("export_csv_tab2_part3","Export data"),
-		plot_tabs2_part3_2=plot_tabs2_part3_2
+		plot_tabs2_part3_2=plot_tabs2_part3_2,
+
+		#--------------------------------
+		# TABS2 - PART4
+
+		select_year_tabs2_part4=select_year_tabs2_part4,
+		select_scale_det_tabs2_part4=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_part4"),
+		export_csv_tab2_part4=downloadButton("export_csv_tab2_part4","Export data"),
+		plot_tabs2_part4_1=plot_tabs2_part4_1,
+		plot_tabs2_part4_2 =plot_tabs2_part4_2
         ),
     server = server
 )

@@ -1,9 +1,10 @@
+
 svg.selectAll("text").remove();
 svg.selectAll("g").remove();
 svg.selectAll("rect").remove();
 
 
-margin = {top: height*50/400, right: 40, bottom: 30, left: 35*width/400};
+margin = {top: height*50/400, right: 40, bottom: 60, left: 35*width/400};
 
 
 const HOVERCOLOR="#62b1e1";
@@ -42,8 +43,10 @@ var ticks_lab_y=0.7*margin.left*13/40;
 
 xAxis.selectAll(".tick text")
   .attr("color","black")
-  .attr("font-size","10px")
-  .attr("font-weight","bold");
+  .attr("font-size","9px")
+  .attr("font-weight","bold")
+  .attr("transform","rotate(15)")
+.attr("text-anchor","start");
 
 const yAxis=svg.append("g")
   .call(d3.axisLeft(y).ticks(null,"s"))

@@ -77,13 +77,13 @@
     margin-top: 5%;
 }
 
-.dashboard-nb_etab-part-flex{
+#dashboard-nb_etab-part-flex{
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     height: 95%;
-    margin-top: 5%;
+    margin-top: 2%;
 }
 
 
@@ -222,8 +222,9 @@
 	display:flex;
 	align-items: center;
 	justify-content: center;
-	width:100%;
-	height: 100%;
+	width:90%;
+	height: 85%;
+	flex-direction: column;
 }
 
 #plot_dashboard_p2{
@@ -233,4 +234,12 @@
 	width: 50%;
 	height: 70%;
 	/* background-color: blueviolet; */
+}
+#dashboard-nb_etab-flex{
+	display:flex;
+	flex-direction: column;
+	width:100%;
+	height: 90%;
+	justify-content: center;
+	align-items: center;
 }

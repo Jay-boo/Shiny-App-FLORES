@@ -34,7 +34,7 @@
       <div class="dashboard-key-container">
       
       
-        <h2>Horizon de L'ESS au sein la région Grand Est</h2>
+		  <h2>Horizon de L'ESS au sein la région Grand Est</h2>
         {{dashboard_select_Input_YEARS_key}}
         
         
@@ -86,10 +86,10 @@
 
       </div>
     
-	  <h4>L'ESS Grand Est face aux autres régions </h4> 
+	  <h4 style="color:whitesmoke;">L'ESS Grand Est face aux autres régions </h4> 
 	  
 					<div  class="dashboard-nb_etab-part">
-						<div id="dashboard-nb_etab-part-flex"></div>
+						<div id="dashboard-nb_etab-part-flex">
 					<div id="select-boxes-tabs2-head">
 
 						{{select_year_tabs2_head}}
@@ -118,8 +118,9 @@
 		  
 
 					<div id="plot_tabs2_head" class="shiny-plot-output" style="width:90%;height:100%"></div>
-			</div>
 			{{export_csv_dashboard_part2}}
+			</div>
+</div>
 
 	  </div>
 
@@ -162,7 +163,10 @@
 						<div id="div-plot-tabs2-part1_2">
 							{{plot_tabs2_part1_2}}
 						</div>
-						{{export_csv_tab2_part1}}
+						<div class="footer-tabs2">
+							{{export_csv_tab2_part1}}
+							<span style="color:gray;font-style:italic;font-size:15px;font-weight:normal;">* : secret statistique</span>
+						</div>
 					</div>
 
 					<div id="part2-tabs2" class="tabs2-part">
@@ -196,7 +200,10 @@
 							{{plot_tabs2_part2_2}}
 
 						</div>
+						<div class="footer-tabs2">
 						{{export_csv_tab2_part2}}
+							<span style="color:gray;font-style:italic;font-size:15px;font-weight:normal;">* : secret statistique</span>
+						</div>
 					</div>
 
 					<div id="part3-tabs2" class="tabs2-part">
@@ -231,8 +238,47 @@
 
 							{{plot_tabs2_part3_2}}
 						</div>
+						<div class="footer-tabs2">
 						{{export_csv_tab2_part3}}
+							<span style="color:gray;font-style:italic;font-size:15px;font-weight:normal;">* : secret statistique</span>
+						</div>
 					</div>
+
+					<div id="part4-tabs2" class="tabs2-part">
+
+						<span> Répartition Homme Femme dans les postes de l'ESS</span>
+						<div id="select-boxes-tabs2-part4">
+
+
+							{{select_year_tabs2_part4}}
+							<select  id="select_scale_tabs2_part4" class="select_box_custom">
+								<option value="REG">Régionale</option>
+								<option value="DEP">Départementale</option>
+							</select>
+							<select  id="select_ESS_tabs2_part4" class="select_box_custom">
+								<option value="ESS">ESS</option>
+								<option value="ESS + Hors ESS">ESS + Hors ESS</option>
+								<option value="Hors ESS">Hors ESS</option>
+							</select>
+							{{select_scale_det_tabs2_part4}}
+							<input type="checkbox" id="prct_part4">
+							<label style="font-size:15px; font-weight:bold;" for="prct">Afficher en %</label>
+						</div>
+						<div id="div-plot-tabs2-part4_1">
+							{{plot_tabs2_part4_1}}
+
+						</div>
+						<div id="div-plot-tabs2-part4_2">
+							{{plot_tabs2_part4_2}}
+
+						</div>
+						
+						<div class="footer-tabs2">
+						{{export_csv_tab2_part4}}
+							<span style="color:gray;font-style:italic;font-size:15px;font-weight:normal;">* : secret statistique</span>
+						</div>
+					</div>
+
 				</div>		
 			</div>
 

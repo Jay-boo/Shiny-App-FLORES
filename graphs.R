@@ -662,3 +662,104 @@ tmp  <- tmp %>% filter(DEP==nom_DEP)%>% select(-DEP,-prct)
 # Pas d'information
 
 
+
+
+
+
+
+
+
+
+
+
+#---------------------
+#	 TABS2 - PART4 
+#-----------------------
+
+	data_H_F <- reactive({
+		TC_nb <- ""
+		if(input$select_scale == "REG"){
+			TC_nb <- "TC16.csv"
+		}else if(input$select_scale == "DEP"){
+			TC_nb <- "TC4.csv"
+		}
+		# No data for EPCI
+		data_id <-paste("treated_dataset/",input$select_year,"/",TC_nb,sep="")
+		return(tables[[data_id]])
+	})
+
+#---------
+# REG
+
+df  <- tables[["outputs/2017/TC16.csv"]]
+df<- df%>% filter( 
+	tolower(famille)=="ensemble" &
+	tolower(type_emploi)=="ensemble") %>% select(-famille,-type_emploi) 
+first_part  <- df%>%filter(REG=="France entière")
+
+first_part_bis  <-  data.frame("REG"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+
+for(fam in first_part$ESS%>%unique ){
+	tmp  <- first_part%>% filter(ESS==fam)
+	tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+	}
+	first_part_bis  <- rbind(first_part_bis,tmp)
+}
+
+df  <- df %>% filter(REG=="Grand-Est")
+new_dat  <-  data.frame("REG"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+for(fam in df$ESS%>%unique ){
+	tmp  <- df%>% filter(ESS==fam)
+	tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+	}
+	new_dat  <- rbind(new_dat,tmp)
+}
+
+rbind(new_dat,first_part_bis)
+#--------------
+# DEP
+
+
+df  <- tables[["outputs/2017/TC4.csv"]]
+nom_DEP  <- "Marne"
+
+code  <-available_DEP%>%filter(nom==nom_DEP)%>% select(code) 
+code  <- code[[1]]
+df<- df%>% filter( 
+	tolower(famille)=="ensemble" &
+	tolower(type_emploi)=="ensemble") %>% select(-famille,-type_emploi) 
+first_part  <- df%>%filter(DEP=="France entière")
+
+first_part_bis  <-  data.frame("DEP"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+
+for(fam in first_part$ESS%>%unique ){
+	tmp  <- first_part%>% filter(ESS==fam)
+	tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+	}
+	first_part_bis  <- rbind(first_part_bis,tmp)
+}
+
+df  <- df %>% filter(as.numeric(DEP)==as.numeric(code))
+new_dat  <-  data.frame("DEP"=character(),"ESS"=character(),"sexe"=character(),"nb_poste"=numeric(),"prct"=numeric())
+for(fam in df$ESS%>%unique ){
+	tmp  <- df%>% filter(ESS==fam)
+	tot  <- tmp[which(tmp$sexe=="Ensemble"),"nb_poste"]
+	for (row in 1:nrow(tmp)){
+		tmp[row,"prct"] <- round(tmp[row,"nb_poste"] /tot,2)*100
+	}
+	new_dat  <- rbind(new_dat,tmp)
+}
+
+rbind(new_dat,first_part_bis)
+
+
+
+
+
+
