@@ -23,7 +23,7 @@ getIndexCol  <- function(var_lab,data){
 }
 var_to_title  <- list(
 					  "nb_etab"="nombre d'établissements",
-					  "eff_31"="nombre effectifs aux 31/12/",
+					  "eff_31"="nombre effectifs aux 31/12",
 					  "eff_EQTP"="nombre d'effectifs equivalents temps plein",
 					  "nb_ent"="nombre d'entreprises",
 					  "rem_brut"="montants des rémunérations brutes"
@@ -164,7 +164,7 @@ plot_tabs2_part3_1 =d3Output("plot_tabs2_part3_1",height = "100%",width="90%")
 plot_tabs2_part3_2 =d3Output("plot_tabs2_part3_2",height = "100%",width="90%")
 plot_tabs2_part4_1 =d3Output("plot_tabs2_part4_1",height = "100%",width="90%")
 plot_tabs2_part4_2 =d3Output("plot_tabs2_part4_2",height = "100%",width="90%")
-
+plot_tabs2_head =d3Output("plot_tabs2_head",height = "100%",width="90%")
 selectbox_HTML=""
 for (choice in list.dirs("./outputs/", recursive = FALSE, full.names = FALSE) ){
     selectbox_HTML=paste(selectbox_HTML,'<option value="',choice,'">',choice,'</option>',sep="")
@@ -319,6 +319,9 @@ server <- function(input,output,session){
 		}else{
 			nameTable="EPCI_T1.csv"
 		}
+		if(scale=="EPCI" & input$select_var_tabs2_head=="nb_ent"){
+			return(NA)
+		}
 
         PATH = paste("outputs/",year,"/",nameTable,sep="")
 		
@@ -362,7 +365,7 @@ server <- function(input,output,session){
 			first_part[1,1] =input$select_scale_det_tabs2_head
 			second_part  <- df %>% filter (as.numeric(DEP) %in% as.numeric(available_DEP$code) & famille=="Ensemble" & ESS=="ESS" & typo_A=="Ensemble des secteurs d'activité" & typo_A_det=="Ensemble")%>%select(-typo_A,-typo_A_det,-famille,-ESS)
 
-			second_part  <- data.frame(second_part$DEP ,second_part[,getIndexCol("nb_etab",second_part)])
+			second_part  <- data.frame(second_part$DEP ,second_part[,getIndexCol(varLab,second_part)])
 			colnames(second_part) <- c("DEP",varLab)
 			second_part  <- second_part %>% filter(as.numeric(DEP) !=as.numeric(code))
 			second_part  <-  arrange(second_part,desc(second_part[,getIndexCol(varLab,second_part)]))
@@ -376,7 +379,6 @@ server <- function(input,output,session){
 			colnames(second_part) = c("DEP",varLab)
 			first_part  <- rbind(c("moyenne",round(mean(tmp[,getIndexCol(varLab,tmp)])),3),first_part)
 			data  <- rbind(first_part,second_part)
-
 		}else{
 
 
@@ -409,46 +411,67 @@ server <- function(input,output,session){
 
 	})
 
-	output$plot_tabs2_head  <- renderPlot({
+	output$plot_tabs2_head  <- renderD3({
+
+		scale  <- input$select_scale_tabs2_head
+
+		if(scale=="EPCI" & input$select_var_tabs2_head=="nb_ent"){
+		r2d3(
+
+			 script="www/assets/warning_data_missing.js"
+		)
+		}else{
 		df  <- data_tabs2_head()
 		colnames(df)  <-  c("country","value")
 		varLab  <- input$select_var_tabs2_head
 		title_subpart_1  <- ""
-		scale  <- input$select_scale_tabs2_head
 		if(scale=="REG"){
+			df <- df %>% filter(country %in%c(input$select_scale_det_tabs2_head,"moyenne"))
 			title_subpart_1  <- paste(var_to_title[[varLab ]],"sur l'ensemble des régions francaises")
-		}else if(scale=="DEP"){
-
-			title_subpart_1  <- paste(var_to_title[[varLab ]],"sur l'ensemble des départements de Grand Est")
-		}else{
-
-			title_subpart_1  <- paste(var_to_title[[varLab ]],"sur l'ensemble des EPCI de Grand Est")
 		}
-
 		title_subpart_2  <- ""
 		scale  <- input$select_scale_tabs2_head
 		if(scale=="REG"){
-			title_subpart_2  <- "régions"
+			title_subpart_2  <-"" 
 		}else if(scale=="DEP"){
 
-			title_subpart_2  <- "départements"
+			title_subpart_2  <- "face aux autres départements de GE"
 		}else{
 
-			title_subpart_1  <- "EPCI"
+			title_subpart_2  <- "face aux autres EPCI de GE"
 		}
+		colnames(df) <- c("country","value")
+		df <-jsonlite::toJSON(df,dataframe = "rows",auto_unbox = FALSE,rownames=FALSE)
+		var_name_plot_sub <- var_to_short[[varLab]]
+		var_name_plot <- var_to_short[[varLab]]
+		r2d3(
+			 data=df,
+
+			 script="www/assets/barplot_classic_bis.js",
+			 options=list(
+						  background_color ='rgb(215, 245, 255)',
+						  title=paste("Comparaison de",input$select_scale_det_tabs2_head,title_subpart_2,"(",var_to_title[[varLab]],")",sep=" "),
+						  var_name=var_to_title[[varLab]],
+						  short_var_name=var_name_plot_sub,
+						  y_lab=var_name_plot,
+						  year=input$select_year_tabs2_part1
+
+			 )
+		)
+
 		
-		g  <- ggplot(df,aes(country,value))
-		g  <- g+ geom_col("fill"="#6dc5fb")+
-			xlab(" Régions/Moyenne")+
-			ylab(var_to_short[[varLab]])+
-			ggtitle(paste(var_to_title[[varLab]],"en",input$select_scale_det_tabs2_head,"comparé à la moyenne du",title_subpart_1,"et au 3 plus importants",title_subpart_2,"","(",input$select_year_tabs2_head,")",sep=" "))+
-			guides(fill="none")+
-			scale_fill_hue()+ theme (axis.text.x=element_text(face="bold",size=13,angle=50),plot.background = element_rect(fill = "#D7F5FF"),panel.background = element_rect(fill =  "#D7F5FF"))
-
-		return(g)
-	})
+	}})
 
 
+		# g  <- ggplot(df,aes(country,value))
+		# g  <- g+ geom_col("fill"="#6dc5fb")+
+		# 	xlab(" Régions/Moyenne")+
+		# 	ylab(var_to_short[[varLab]])+
+		# 	ggtitle(paste(var_to_title[[varLab]],"en",input$select_scale_det_tabs2_head,"comparé à la moyenne du",title_subpart_1,"et au 3 plus importants",title_subpart_2,"","(",input$select_year_tabs2_head,")",sep=" "))+
+		# 	guides(fill="none")+
+		# 	scale_fill_hue()+ theme (axis.text.x=element_text(face="bold",size=13,angle=50),plot.background = element_rect(fill = "#D7F5FF"),panel.background = element_rect(fill =  "#D7F5FF"))
+
+		# return(g)
 
 
 
@@ -512,6 +535,9 @@ server <- function(input,output,session){
 		}else{
 			id_table  <- "EPCI_T2.csv"
 
+		}
+		if(scale=="EPCI" & input$select_var_tabs2_part1=="nb_ent"){
+			return(NA)
 		}
 		PATH  <- paste("outputs/",year,"/",id_table,sep="") 
 		df <- tables[[PATH]]
@@ -684,6 +710,13 @@ server <- function(input,output,session){
 
 	output$plot_tabs2_part1_1  <- renderD3({
 		varLab  <- input$select_var_tabs2_part1
+		scale  <- input$select_scale_tabs2_part1
+		if(scale=="EPCI" & input$select_var_tabs2_part1=="nb_ent"){
+		r2d3(
+
+			 script="www/assets/warning_data_missing.js"
+		)
+		}else{
 
 		df  <- data_tabs2_part1()
 		if( input$select_scale_tabs2_part1=="REG"){
@@ -695,7 +728,6 @@ server <- function(input,output,session){
 		}else{
 			# HORS ESS et ESS
 			df  <-  df%>% filter(famille==input$select_ESS_tabs2_part1)%>% select(-EPCI,-famille)
-
 		}
 		if(input$prct_part1){
 			df  <-  df[,-getIndexCol(varLab,df)]
@@ -734,7 +766,7 @@ server <- function(input,output,session){
 			 )
 		)
 		
-	})
+	}})
 
 
 
@@ -913,6 +945,9 @@ server <- function(input,output,session){
 	data_tabs2_part2  <- reactive({
 		year <-  input$select_year_tabs2_part2
 		scale  <-  input$select_scale_tabs2_part2
+		if(scale=="EPCI" & input$select_var_tabs2_part2=="nb_ent"){
+			return(NA)
+		}
 		varLab  <- input$select_var_tabs2_part2
 		id_table  <- ""
 		if(scale=="REG"){
@@ -1109,7 +1144,14 @@ server <- function(input,output,session){
 	output$plot_tabs2_part2_1  <-  renderD3({
 
 		varLab  <- input$select_var_tabs2_part2
+		scale  <- input$select_scale_tabs2_part2
 
+		if(scale=="EPCI" & input$select_var_tabs2_part2=="nb_ent"){
+		r2d3(
+
+			 script="www/assets/warning_data_missing.js"
+		)
+		}else{
 		df  <-  data_tabs2_part2()
 
 		if(input$select_scale_tabs2_part2 =="REG"){
@@ -1196,7 +1238,7 @@ server <- function(input,output,session){
 
 
 
-	})
+	}})
 
 
 
@@ -1911,7 +1953,7 @@ server <- function(input,output,session){
 
 shinyApp(
     ui = htmlTemplate(
-        "www/index_bis.html",
+        "www/index.html",
         pieChart_etab = pieChart_etab,
         pieChart_rem = pieChart_rem,
         pieChart_emploi = pieChart_emploi,
@@ -1923,6 +1965,9 @@ shinyApp(
 		select_year_tabs2_head=select_year_tabs2_head,
 		select_scale_det_tabs2_head=construct_select_box(c(overAll_filter_REG),"select_scale_det_tabs2_head"),
 		export_csv_dashboard_part2 = downloadButton("export_csv_dashboard_part2","Export data"),
+
+
+		plot_tabs2_head=plot_tabs2_head,
 		#----------------------------------
 		# TABS2 - PART 1
 		select_year_tabs2_part1=select_year_tabs2_part1,

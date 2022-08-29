@@ -15,7 +15,7 @@ path= d3.arc()
 
 color = d3.scaleOrdinal()
     .domain(data)
-    .range(["#0c4493","#5b89cc"]);
+    .range(["#6dc5fb","#5b89cc"]);
 
 
 
@@ -84,7 +84,7 @@ arc.append("path")
 const labels=arc.append("g")
   .attr("transform",v=> `translate(${label.centroid(v)})`)
   .attr('text-anchor', 'middle')
-    .style('fill', 'white')
+    .style('fill', 'black')
     .style('font-size', '75%')
     .style('display', v => v.endAngle - v.startAngle > textThreshold ? 'inline' : 'none');
 
