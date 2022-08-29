@@ -13,6 +13,10 @@ var var_name=options.var_name;
 var y_lab=options.y_lab;/*ylab var*/
 var short_var_name=options.short_var_name;/*ce qu'il y a au dessus des barres*/
 var year=options.year
+data.forEach(function(d){
+	d.country=d.country;
+	d.value=parseInt(d.value);
+})
 
 x = d3.scaleBand()
   .range([margin.left, width - margin.right])

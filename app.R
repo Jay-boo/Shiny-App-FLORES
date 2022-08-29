@@ -9,6 +9,7 @@ library(readODS)
 require(skimr)
 require(jsonlite)
 require("httr")
+
 #source("update.R")
 # Create  missing_imports list + Import the missing_files 
 
@@ -1077,8 +1078,6 @@ server <- function(input,output,session){
 			nom_EPCI  <- input$select_scale_det_tabs2_part2
 			df  <- df %>% filter(nom_complet==nom_EPCI & jurid1 %in%c("1-ASSO+FOND","2-COOPERATIVES","3-MUTUELLES","5A-PUBLIC","5B-PRIVE","6-TOTAL"))
 
-
-
 			for (i in 1:nrow(df)){
 				splitted  <- strsplit(df$jurid1[i],"-")[[1]]
 	
@@ -1116,11 +1115,45 @@ server <- function(input,output,session){
 		if(input$select_scale_tabs2_part2 =="REG"){
 			
 
-			df  <- df %>% filter(REG==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2 & famille !="Ensemble")%>% select(-REG,-ESS)
+			# df  <- df %>% filter(REG==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2 & famille !="Ensemble")%>% select(-REG,-ESS)
+			df  <-  df %>%filter(REG==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2)
+			if(input$select_ESS_tabs2_part2=="ESS + Hors ESS"){
+				ESS_val <- 0
+				ESS_prct <- 0
+				for (i in 1: nrow(df)){
+					famille <- df[i,getIndexCol("famille",df)]
+					if(famille %in% c("Coopérative","Mutuelle","Association","Fondation")){
+						ESS_val <- ESS_val + df[i,getIndexCol(varLab,df)]
+					}
+				}
+				ensemble <- df[which(df$famille=="Ensemble"),getIndexCol(varLab,df)]
+				ESS_prct <- round(ESS_val/ensemble,2)*100
+				df <- df %>%filter( (famille %in% c("Public","Privé Hors ESS","Ensemble") ))
+				df <-rbind(df,c(input$select_scale_det_tabs2_part2,"ESS + Hors ESS","ESS",ESS_val,ESS_prct))
+			
+			}
+			df <- df %>% filter(famille !="Ensemble") %>% select(-REG,-ESS)
+
 		
 		}else if(input$select_scale_tabs2_part2 =="DEP"){
 
-			df  <- df %>%filter(DEP==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2 & famille !="Ensemble")%>% select(-DEP,-ESS)
+			df  <- df %>%filter(DEP==input$select_scale_det_tabs2_part2 & ESS==input$select_ESS_tabs2_part2  )
+			if(input$select_ESS_tabs2_part2=="ESS + Hors ESS"){
+				ESS_val <- 0
+				ESS_prct <- 0
+				for (i in 1: nrow(df)){
+					famille <- df[i,getIndexCol("famille",df)]
+					if(famille %in% c("Coopérative","Mutuelle","Association","Fondation")){
+						ESS_val <- ESS_val + df[i,getIndexCol(varLab,df)]
+					}
+				}
+				ensemble <- df[which(df$famille=="Ensemble"),getIndexCol(varLab,df)]
+				ESS_prct <- round(ESS_val/ensemble,2)*100
+				df <- df %>%filter( (famille %in% c("Public","Privé Hors ESS","Ensemble") ))
+				df <-rbind(df,c(input$select_scale_det_tabs2_part2,"ESS + Hors ESS","ESS",ESS_val,ESS_prct))
+			
+			}
+			df <- df %>% filter(famille !="Ensemble") %>% select(-DEP,-ESS)
 		}else{
 
 			df  <- df %>% filter(famille!="TOTAL")%>% select(-EPCI)
@@ -1240,6 +1273,13 @@ server <- function(input,output,session){
 					df$country[row]  <- paste(df$country[row],"*",sep="")
 				}
 			}
+			if(input$select_ESS_tabs2_part2=="ESS + Hors ESS"){
+				tmp <- df %>% filter(!(country %in% c("Privé Hors ESS","Public")))
+				
+				ESS_val <-sum(tmp$value)
+				df <- rbind(df %>%filter(country %in%c("Privé Hors ESS","Public")),c("ESS",ESS_val))
+
+			}
 			df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 			r2d3(
 				 data=df,
@@ -1273,6 +1313,9 @@ server <- function(input,output,session){
 		}
 		updateSelectInput(session,"select_ESS_tabs2_part2",choices=choice)
 	})
+
+
+
 
 
 
@@ -1746,6 +1789,7 @@ server <- function(input,output,session){
 				var_name_plot ="nb poste"
 				var_name_plot_sub="postes"
 		}
+
 		colnames(df) <- c("country","value")
 		for(row in 1:nrow(df)){
 			if(is.na(df$value[row])){
@@ -1753,14 +1797,15 @@ server <- function(input,output,session){
 				df$country[row]  <- paste(df$country[row],"*",sep="")
 			}
 		}
+		colnames(df)  <-  c("REG","nb_etab")
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 		r2d3(
 			 data=df,
 
-			 script="www/assets/barplot_classic.js",
+			 script="www/assets/pieChart_repHF.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
-						  title=paste("Répartition Homme Femmes des postes au sein de :",input$select_ESS_tabs2_part4,"en",input$select_scale_det_tabs2_part3,"(",input$select_year_tabs2_part4,")",sep=" "),
+						  title=paste("Répartition Hommes Femmes des postes au sein de :",input$select_ESS_tabs2_part4,"en",input$select_scale_det_tabs2_part3,"(",input$select_year_tabs2_part4,")",sep=" "),
 						  var_name="Nombre établissements",
 						  short_var_name=var_name_plot_sub,
 						  y_lab=var_name_plot,
@@ -1770,6 +1815,12 @@ server <- function(input,output,session){
 		)
 
 
+	})
+	output$title_HF_1  <- renderText({
+
+						  title=paste("Répartition Hommes Femmes des postes au sein de :",input$select_ESS_tabs2_part4,"en",input$select_scale_det_tabs2_part3,"(",input$select_year_tabs2_part4,")",sep=" ")
+						  return(title)
+		
 	})
 
 	output$plot_tabs2_part4_2  <- renderD3({
@@ -1800,11 +1851,12 @@ server <- function(input,output,session){
 				df$country[row]  <- paste(df$country[row],"*",sep="")
 			}
 		}
+		colnames(df)  <- c("REG","nb_etab")
 		df  <- jsonlite::toJSON(df,dataframe="rows",auto_unbox = FALSE,rownames=FALSE)
 		r2d3(
 			 data=df,
 
-			 script="www/assets/barplot_classic.js",
+			 script="www/assets/pieChart_repHF.js",
 			 options=list(
 						  background_color ='rgb(215, 245, 255)',
 						  title=paste("Répartition Homme Femmes des postes au sein de :",input$select_ESS_tabs2_part4,"sur la France","(",input$select_year_tabs2_part4,")",sep=" "),
@@ -1817,6 +1869,12 @@ server <- function(input,output,session){
 		)
 
 
+	})
+	output$title_HF_2  <- renderText({
+
+						  title=paste("Répartition Hommes Femmes des postes au sein de :",input$select_ESS_tabs2_part4,"sur la France","(",input$select_year_tabs2_part4,")",sep=" ")
+						  return(title)
+		
 	})
 
 

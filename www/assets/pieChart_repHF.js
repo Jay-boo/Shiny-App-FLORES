@@ -1,5 +1,7 @@
+
 svg.selectAll('g').remove();
 var background_c=options.background_color;
+var short_var_name = options.short_var_name;
 var min_dim= Math.min(width,height);
 var radius=(min_dim/2)-0.1* min_dim;
 const padding=5;
@@ -92,5 +94,5 @@ labels.append('text')
 labels.append('text')
         .attr('dy', '1.2em')
         .style('font-size', '90%')
-        .text(v => ` ${v.data.nb_etab}`);
+        .text(v => ` ${v.data.nb_etab} ${short_var_name}`);
  
