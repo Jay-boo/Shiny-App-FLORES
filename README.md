@@ -1,100 +1,25 @@
-# Treatment Part of the dataVizualisation project
-
- -  `import.R` : Import the different tables -> detect columns -> rename columns -> detect wich TC is referenced  -> write csv file with the according filename 
-
-
-https://rstudio.github.io/r2d3/articles/data_conversion.html
-Can help : https://datatricks.co.uk/creating-a-d3-js-bar-chart-in-r
+# Application de visualisation de la base FLORES pour la Chambre Régionale de l'Economie Sociale et Solidaire
 
 
 <hr/>
 <br/>
 
-## TO DO 
-
-- **1. Reecrire les fonction d'import de manières à rendre un bilan** DONE
-- **2. Réecrire update**
-- **3.Faire le test de import files avec TC6 et TC7 de 2018**
-
-<br/>
-
-<hr/>
-
-## Structure data inputs :
-
-- inputs
-    - `report_imports.csv`
-    - 2017
-        - `infra_dep`
-            - EPCI
-        - `reg_dep`
-            - TC1
-            - TC2
-            - ...
-        - `cmd_files`
-
-    - 2018
-        - `infra_dep`
-            - EPCI
-        - `reg_dep`
-            - TC1
-            - TC2
-            - ...
-        - `cmd_files`
-    - 2019
-        - ...
-
-<hr/>
+This work was done for CRESS and focuses on visualisaitonon FLORES databases.
 
 
-## Structure data outputs :
+-> `importEPCI.R`: Importation process of EPCI scaled tables
 
-- outputs
-    - 2017
-        - Nomenclatures
-        - TC1 ... + EPCI(s)
+-> `importVF.R` : Importation process of regional,national,departmental scaled tables
 
-    - 2018
-        - Nomenclatures
-        - TC1 ... + EPCI(s)
+-> `init_report_imports.R` : update the report of importations in `inputs/report_imports.csv`
 
-    - 2019
-        - ...
+-> `update.R` : Detect the new importations to process
 
-<hr/>
+-> `app.R` : server part of the application made with `Rshiny`
 
+-> `www/assets` : contains the `d3.js` visualisations
 
-### Remarque `import.R`
-    
-**Rmq : La conversion dans l'etape avant de les écrires de sert a rien**
+-> `www/index.html` and `.css` files : client part of the application
 
-Il manque certaine table : TC5 , TC17 , TC25 et TC25 bis inexistant pour 2017
-
-
-- On ne peux pas importer un unique fichier EPCI , on le fais uniqument par directory
-
-#### To do :
-
-- [X] Add typology detection in the `main.R`
-- [X] Code the write step 
-- [X] Test with all the `TC` : `passed`
-- [ ] Add `.xls` and `.xlsx` format
-- [ ] Repérer l'année et creer un dossier spécifique pour chaque année dans la directory `output`
-
-### Remarque `update.R`
-
-Le probleme de detection des differences est que les nom inputs/outputs ne correspondent pas forcement
-Ainsi une solution pourrait etre de simplement tenir un report d'importation
-
-= > Dans import.R a chaque fichier importé il ecrit le nom du fichier importé dans un report .Rdata
-Remarque : Ici ce n'est pas grave de le stocker en local , il n'a pas vocation à etre modifié lors de la mise ne ligne de l'appli.
-Structure du report: 
-directory(year) |scale | filename
-
-
-<hr/>
-
-## Starting coding the UI 
-  &rarr; Objectiv : Finish DashBoard UI by the end of the week
 
 
