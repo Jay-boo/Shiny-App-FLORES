@@ -13,7 +13,7 @@ This work was done for CRESS and focuses on visualisaitonon FLORES databases.
 
 -> `init_report_imports.R` : update the report of importations in `inputs/report_imports.csv`
 
--> `update.R` : Detect the new importations to process
+-> `update.R` : Detects the new importations to process
 
 -> `app.R` : server part of the application made with `Rshiny`
 
