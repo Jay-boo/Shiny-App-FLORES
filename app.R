@@ -874,6 +874,26 @@ server <- function(input,output,session){
 		
 	})
 
+	observe({
+		s_options <- list()
+		if(input$select_scale_tabs2_part1=="EPCI"){
+		s_options <- list()
+		s_options[["Nombre Etablissements"]] <- "nb_etab"
+		s_options[["Nombre eff 31/12"]] <- "eff_31"
+		s_options[["Nombre eff EQTP"]] <- "eff_EQTP"
+		s_options[["Remunérations brutes"]] <- "rem_brut"
+		}else{
+		s_options <- list()
+
+		s_options[["Nombre Etablissements"]] <- "nb_etab"
+		s_options[["Nombre eff 31/12"]] <- "eff_31"
+		s_options[["Nombre eff EQTP"]] <- "eff_EQTP"
+		s_options[["Nombre Entreprises"]] <- "nb_ent"
+		s_options[["Remunérations brutes"]] <- "rem_brut"
+		}
+			updateSelectInput(session,"select_var_tabs2_part1",choices=s_options)
+	})
+
 
 
 
@@ -1930,6 +1950,45 @@ server <- function(input,output,session){
 
 		}
 		updateSelectInput(session,"select_scale_det_tabs2_part4",choices=choice)
+	})
+	observe({
+		s_options <- list()
+		if(input$select_scale_tabs2_head=="EPCI"){
+		s_options <- list()
+		s_options[["Nombre Etablissements"]] <- "nb_etab"
+		s_options[["Nombre eff 31/12"]] <- "eff_31"
+		s_options[["Nombre eff EQTP"]] <- "eff_EQTP"
+		s_options[["Remunérations brutes"]] <- "rem_brut"
+		}else{
+		s_options <- list()
+
+		s_options[["Nombre Etablissements"]] <- "nb_etab"
+		s_options[["Nombre eff 31/12"]] <- "eff_31"
+		s_options[["Nombre eff EQTP"]] <- "eff_EQTP"
+		s_options[["Nombre Entreprises"]] <- "nb_ent"
+		s_options[["Remunérations brutes"]] <- "rem_brut"
+		}
+			updateSelectInput(session,"select_var_tabs2_head",choices=s_options)
+	})
+
+	observe({
+		s_options <- list()
+		if(input$select_scale_tabs2_part2=="EPCI"){
+		s_options <- list()
+		s_options[["Nombre Etablissements"]] <- "nb_etab"
+		s_options[["Nombre eff 31/12"]] <- "eff_31"
+		s_options[["Nombre eff EQTP"]] <- "eff_EQTP"
+		s_options[["Remunérations brutes"]] <- "rem_brut"
+		}else{
+		s_options <- list()
+
+		s_options[["Nombre Etablissements"]] <- "nb_etab"
+		s_options[["Nombre eff 31/12"]] <- "eff_31"
+		s_options[["Nombre eff EQTP"]] <- "eff_EQTP"
+		s_options[["Nombre Entreprises"]] <- "nb_ent"
+		s_options[["Remunérations brutes"]] <- "rem_brut"
+		}
+			updateSelectInput(session,"select_var_tabs2_part2",choices=s_options)
 	})
 
 
